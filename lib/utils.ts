@@ -1,11 +1,11 @@
 // /lib/utils.ts
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { Globe, Book, YoutubeIcon, TelescopeIcon } from 'lucide-react'
-import { ChatsCircle, Code, Memory, XLogo } from '@phosphor-icons/react'
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { Globe, Book, YoutubeIcon, TelescopeIcon, GraduationCap, Microscope, Briefcase, Factory } from 'lucide-react';
+import { ChatsCircle, Code, Memory, XLogo } from '@phosphor-icons/react';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function generateId(prefix: string): string {
@@ -23,7 +23,7 @@ export function getUserId(): string {
   return userId;
 }
 
-export type SearchGroupId = 'web' | 'academic' | 'youtube' | 'x' | 'analysis' | 'chat' | 'extreme' | 'buddy';
+export type SearchGroupId = 'web' | 'academic' | 'youtube' | 'x' | 'analysis' | 'chat' | 'extreme' | 'buddy' | 'education' | 'research' | 'entrepreneurship' | 'operations';
 
 export const searchGroups = [
   {
@@ -33,46 +33,33 @@ export const searchGroups = [
     icon: Globe,
     show: true,
   },
+ 
   {
-    id: 'buddy' as const,
-    name: 'Buddy',
-    description: 'Your personal memory companion',
-    icon: Memory,
+    id: 'education' as const,
+    name: 'Education',
+    description: 'Explore educational resources and learning materials',
+    icon: GraduationCap,
     show: true,
   },
   {
-    id: 'x' as const,
-    name: 'X',
-    description: 'Search X posts and content powered by Exa',
-    icon: XLogo,
+    id: 'research' as const,
+    name: 'Research',
+    description: 'Dive into research papers and studies',
+    icon: Microscope,
     show: true,
   },
   {
-    id: 'analysis' as const,
-    name: 'Analysis',
-    description: 'Code, stock and currency stuff',
-    icon: Code,
+    id: 'entrepreneurship' as const,
+    name: 'Entrepreneurship',
+    description: 'Resources for startups and business innovation',
+    icon: Briefcase,
     show: true,
   },
   {
-    id: 'chat' as const,
-    name: 'Chat',
-    description: 'Talk to the model directly.',
-    icon: ChatsCircle,
-    show: true,
-  },
-  {
-    id: 'academic' as const,
-    name: 'Academic',
-    description: 'Search academic papers powered by Exa',
-    icon: Book,
-    show: true,
-  },
-  {
-    id: 'youtube' as const,
-    name: 'YouTube',
-    description: 'Search YouTube videos powered by Exa',
-    icon: YoutubeIcon,
+    id: 'operations' as const,
+    name: 'Operations',
+    description: 'Tools and insights for business operations',
+    icon: Factory,
     show: true,
   },
   {

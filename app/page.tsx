@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import 'katex/dist/katex.min.css';
-
 import { BorderTrail } from '@/components/core/border-trail';
 import { TextShimmer } from '@/components/core/text-shimmer';
 import { FlightTracker } from '@/components/flight-tracker';
@@ -77,31 +76,21 @@ import {
     YoutubeIcon,
     RefreshCw,
     WrapText,
-    ArrowLeftRight} from 'lucide-react';
+    ArrowLeftRight
+} from 'lucide-react';
 import Marked, { ReactRenderer } from 'marked-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { parseAsString, useQueryState } from 'nuqs';
-import React, {
-    memo,
-    Suspense,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-} from 'react';
+import React, { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Latex from 'react-latex-next';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Tweet } from 'react-tweet';
 import { toast } from 'sonner';
-import {
-    generateSpeech,
-    suggestQuestions
-} from './actions';
+import { generateSpeech, suggestQuestions } from './actions';
 import InteractiveStockChart from '@/components/interactive-stock-chart';
 import { CurrencyConverter } from '@/components/currency_conv';
 import { ReasoningUIPart, ToolInvocationUIPart, TextUIPart, SourceUIPart } from '@ai-sdk/ui-utils';
@@ -126,6 +115,7 @@ import MemoryManager from '@/components/memory-manager';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import MCPServerList from '@/components/mcp-server-list';
+import { Header } from '@/components/layout/header';
 
 export const maxDuration = 120;
 
@@ -206,12 +196,9 @@ const SearchLoadingState = ({
     const variant = colorVariants[color];
 
     return (
-        <Card className="relative w-full h-[100px] my-4 overflow-hidden shadow-none">
+        <Card className="relative w-full h-[100px] my-4 overflow-hidden shadow-none border-none">
             <BorderTrail
-                className={cn(
-                    'bg-gradient-to-l',
-                    variant.border
-                )}
+                className={cn('bg-gradient-to-l', variant.border)}
                 size={80}
             />
             <CardContent className="p-6">
@@ -222,19 +209,13 @@ const SearchLoadingState = ({
                             variant.background
                         )}>
                             <BorderTrail
-                                className={cn(
-                                    "bg-gradient-to-l",
-                                    variant.border
-                                )}
+                                className={cn("bg-gradient-to-l", variant.border)}
                                 size={40}
                             />
                             <Icon className={cn("h-5 w-5", variant.icon)} />
                         </div>
                         <div className="space-y-2">
-                            <TextShimmer
-                                className="text-base font-medium"
-                                duration={2}
-                            >
+                            <TextShimmer className="text-base font-medium" duration={2}>
                                 {text}
                             </TextShimmer>
                             <div className="flex gap-2">
@@ -348,7 +329,7 @@ function CollapsibleSection({
     };
 
     return (
-        <div className="group rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden transition-all duration-200 hover:shadow-sm">
+        <div className="group rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden transition-all duration-200 hover:shadow-md">
             <div
                 className="flex items-center justify-between px-4 py-3 cursor-pointer bg-white dark:bg-neutral-900 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -489,7 +470,6 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
 
     if (!video) return null;
 
-    // Format timestamp for accessibility
     const formatTimestamp = (timestamp: string) => {
         const match = timestamp.match(/(\d+:\d+(?::\d+)?) - (.+)/);
         if (match) {
@@ -499,14 +479,13 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
         return { time: "", description: timestamp };
     };
 
-    // Prevent event propagation to allow scrolling during streaming
     const handleScrollableAreaEvents = (e: React.UIEvent) => {
         e.stopPropagation();
     };
 
     return (
         <div
-            className="w-[280px] flex-shrink-0 rounded-lg border dark:border-neutral-800 border-neutral-200 overflow-hidden bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md transition-shadow duration-200"
+            className="w-[280px] flex-shrink-0 rounded-xl border dark:border-neutral-800 border-neutral-200 overflow-hidden bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md transition-all duration-300"
             onTouchStart={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
         >
@@ -522,7 +501,7 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
                         src={video.details.thumbnail_url}
                         alt=""
                         aria-hidden="true"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         loading="lazy"
                     />
                 ) : (
@@ -590,9 +569,9 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
                                                             <Link
                                                                 key={i}
                                                                 href={`${video.url}&t=${time.split(':').reduce((acc, time, i, arr) => {
-                                                                    if (arr.length === 2) { // MM:SS format
+                                                                    if (arr.length === 2) {
                                                                         return i === 0 ? acc + parseInt(time) * 60 : acc + parseInt(time);
-                                                                    } else { // HH:MM:SS format
+                                                                    } else {
                                                                         return i === 0 ? acc + parseInt(time) * 3600 :
                                                                             i === 1 ? acc + parseInt(time) * 60 :
                                                                                 acc + parseInt(time);
@@ -634,9 +613,7 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
     );
 };
 
-// Memoize the YouTubeCard component with a more comprehensive equality function
 const MemoizedYouTubeCard = React.memo(YouTubeCard, (prevProps, nextProps) => {
-    // Deep comparison of video properties that matter for rendering
     return (
         prevProps.video.videoId === nextProps.video.videoId &&
         prevProps.index === nextProps.index &&
@@ -663,14 +640,13 @@ const HomeContent = () => {
     const [editingMessageIndex, setEditingMessageIndex] = useState(-1);
     const [attachments, setAttachments] = useState<Attachment[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const inputRef = useRef<HTMLTextAreaElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const initializedRef = useRef(false);
     const [selectedGroup, setSelectedGroup] = useState<SearchGroupId>('web');
     const [hasSubmitted, setHasSubmitted] = React.useState(false);
     const [hasManuallyScrolled, setHasManuallyScrolled] = useState(false);
     const isAutoScrollingRef = useRef(false);
 
-    // Get stored user ID
     const userId = useMemo(() => getUserId(), []);
 
     const chatOptions: UseChatOptions = useMemo(() => ({
@@ -684,7 +660,6 @@ const HomeContent = () => {
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
         onFinish: async (message, { finishReason }) => {
-            console.log("[finish reason]:", finishReason);
             if (message.content && (finishReason === 'stop' || finishReason === 'length')) {
                 const newHistory = [
                     { role: "user", content: lastSubmittedQueryRef.current },
@@ -717,7 +692,6 @@ const HomeContent = () => {
     useEffect(() => {
         if (!initializedRef.current && initialState.query && !messages.length) {
             initializedRef.current = true;
-            console.log("[initial query]:", initialState.query);
             append({
                 content: initialState.query,
                 role: 'user'
@@ -727,42 +701,38 @@ const HomeContent = () => {
 
     const ThemeToggle: React.FC = () => {
         const { resolvedTheme, setTheme } = useTheme();
-
         return (
             <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-                className="bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                className="h-9 w-9 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
+                aria-label="Toggle theme"
             >
                 <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
             </Button>
         );
     };
 
-
     const CopyButton = ({ text }: { text: string }) => {
         const [isCopied, setIsCopied] = useState(false);
-
         return (
             <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={async () => {
-                    if (!navigator.clipboard) {
-                        return;
-                    }
+                    if (!navigator.clipboard) return;
                     await navigator.clipboard.writeText(text);
                     setIsCopied(true);
                     setTimeout(() => setIsCopied(false), 2000);
                     toast.success("Copied to clipboard");
                 }}
-                className="h-8 px-2 text-xs rounded-full"
+                className="h-9 w-9 rounded-full"
+                aria-label={isCopied ? "Copied" : "Copy text"}
             >
                 {isCopied ? (
-                    <Check className="h-4 w-4" />
+                    <Check className="h-4 w-4 text-green-500" />
                 ) : (
                     <Copy className="h-4 w-4" />
                 )}
@@ -778,6 +748,7 @@ const HomeContent = () => {
         text: string;
         link: string;
     }
+
     const isValidUrl = (str: string) => {
         try {
             new URL(str);
@@ -788,32 +759,27 @@ const HomeContent = () => {
     };
 
     const preprocessLaTeX = (content: string) => {
-        // First, handle escaped delimiters to prevent double processing
         let processedContent = content
             .replace(/\\\[/g, '___BLOCK_OPEN___')
             .replace(/\\\]/g, '___BLOCK_CLOSE___')
             .replace(/\\\(/g, '___INLINE_OPEN___')
             .replace(/\\\)/g, '___INLINE_CLOSE___');
 
-        // Process block equations
         processedContent = processedContent.replace(
             /___BLOCK_OPEN___([\s\S]*?)___BLOCK_CLOSE___/g,
             (_, equation) => `$$${equation.trim()}$$`
         );
 
-        // Process inline equations
         processedContent = processedContent.replace(
             /___INLINE_OPEN___([\s\S]*?)___INLINE_CLOSE___/g,
             (_, equation) => `$${equation.trim()}$`
         );
 
-        // Handle common LaTeX expressions not wrapped in delimiters
         processedContent = processedContent.replace(
             /(\b[A-Z](?:_\{[^{}]+\}|\^[^{}]+|_[a-zA-Z\d]|\^[a-zA-Z\d])+)/g, 
             (match) => `$${match}$`
         );
 
-        // Handle any remaining escaped delimiters that weren't part of a complete pair
         processedContent = processedContent
             .replace(/___BLOCK_OPEN___/g, '\\[')
             .replace(/___BLOCK_CLOSE___/g, '\\]')
@@ -825,7 +791,6 @@ const HomeContent = () => {
 
     const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         const citationLinks = useMemo<CitationLink[]>(() => {
-            // Improved regex to better handle various markdown link formats
             return Array.from(content.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)).map(match => {
                 const text = match[1]?.trim() || '';
                 const link = match[2]?.trim() || '';
@@ -854,104 +819,87 @@ const HomeContent = () => {
             }, []);
 
             return (
-                <div className="group my-5 relative">
-                    <div className="rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm">
-                        <div className="flex items-center justify-between px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
-                            <div className="px-2 py-0.5 text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                                {language || 'text'}
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <button
-                                    onClick={toggleWrap}
-                                    className={`
-                                      px-2 py-1
-                                      rounded text-xs font-medium
-                                      transition-all duration-200
-                                      ${isWrapped ? 'text-primary' : 'text-neutral-500 dark:text-neutral-400'}
-                                      hover:bg-neutral-200 dark:hover:bg-neutral-700
-                                      flex items-center gap-1.5
-                                    `}
-                                    aria-label="Toggle line wrapping"
-                                >
-                                    {isWrapped ? (
-                                        <>
-                                            <ArrowLeftRight className="h-3 w-3" />
-                                            <span className="hidden sm:inline">Unwrap</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <WrapText className="h-3 w-3" />
-                                            <span className="hidden sm:inline">Wrap</span>
-                                        </>
-                                    )}
-                                </button>
-                                <button
-                                    onClick={handleCopy}
-                                    className={`
-                                      px-2 py-1
-                                      rounded text-xs font-medium
-                                      transition-all duration-200
-                                      ${isCopied ? 'text-primary dark:text-primary' : 'text-neutral-500 dark:text-neutral-400'}
-                                      hover:bg-neutral-200 dark:hover:bg-neutral-700
-                                      flex items-center gap-1.5
-                                    `}
-                                    aria-label="Copy code"
-                                >
-                                    {isCopied ? (
-                                        <>
-                                            <Check className="h-3 w-3" />
-                                            <span className="hidden sm:inline">Copied!</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy className="h-3 w-3" />
-                                            <span className="hidden sm:inline">Copy</span>
-                                        </>
-                                    )}
-                                </button>
-                            </div>
+                <div className="group my-6 relative rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                    <div className="flex items-center justify-between px-4 py-2 bg-neutral-100 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+                        <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                            {language || 'text'}
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                onClick={toggleWrap}
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400 hover:text-primary"
+                            >
+                                {isWrapped ? (
+                                    <>
+                                        <ArrowLeftRight className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Unwrap</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <WrapText className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Wrap</span>
+                                    </>
+                                )}
+                            </Button>
+                            <Button
+                                onClick={handleCopy}
+                                variant="ghost"
+                                size="sm"
+                                className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400 hover:text-primary"
+                            >
+                                {isCopied ? (
+                                    <>
+                                        <Check className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Copied</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Copy className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Copy</span>
+                                    </>
+                                )}
+                            </Button>
                         </div>
-                        <SyntaxHighlighter
-                            language={language || 'text'}
-                            style={theme === 'dark' ? oneDark : oneLight}
-                            customStyle={{
-                                margin: 0,
-                                padding: '0.75rem 0.25rem 0.75rem',
-                                backgroundColor: theme === 'dark' ? '#171717' : 'transparent',
-                                borderRadius: 0,
-                                borderBottomLeftRadius: '0.375rem',
-                                borderBottomRightRadius: '0.375rem',
-                                fontFamily: GeistMono.style.fontFamily,
-                            }}
-                            showLineNumbers={true}
-                            lineNumberStyle={{
-                                textAlign: 'right',
-                                color: theme === 'dark' ? '#6b7280' : '#808080',
-                                backgroundColor: 'transparent',
-                                fontStyle: 'normal',
-                                marginRight: '1em',
-                                paddingRight: '0.5em',
-                                fontFamily: GeistMono.style.fontFamily,
-                                minWidth: '2em'
-                            }}
-                            lineNumberContainerStyle={{
-                                backgroundColor: theme === 'dark' ? '#171717' : '#f5f5f5',
-                                float: 'left'
-                            }}
-                            wrapLongLines={isWrapped}
-                            codeTagProps={{
-                                style: {
-                                    fontFamily: GeistMono.style.fontFamily,
-                                    fontSize: '0.85em',
-                                    whiteSpace: isWrapped ? 'pre-wrap' : 'pre',
-                                    overflowWrap: isWrapped ? 'break-word' : 'normal',
-                                    wordBreak: isWrapped ? 'break-word' : 'keep-all'
-                                }
-                            }}
-                        >
-                            {children}
-                        </SyntaxHighlighter>
                     </div>
+                    <SyntaxHighlighter
+                        language={language || 'text'}
+                        style={theme === 'dark' ? oneDark : oneLight}
+                        customStyle={{
+                            margin: 0,
+                            padding: '1rem',
+                            backgroundColor: theme === 'dark' ? '#171717' : '#fafafa',
+                            borderRadius: 0,
+                            fontFamily: GeistMono.style.fontFamily,
+                        }}
+                        showLineNumbers={true}
+                        lineNumberStyle={{
+                            textAlign: 'right',
+                            color: theme === 'dark' ? '#6b7280' : '#808080',
+                            backgroundColor: 'transparent',
+                            marginRight: '1em',
+                            paddingRight: '0.5em',
+                            fontFamily: GeistMono.style.fontFamily,
+                            minWidth: '2em'
+                        }}
+                        lineNumberContainerStyle={{
+                            backgroundColor: theme === 'dark' ? '#171717' : '#f5f5f5',
+                            float: 'left'
+                        }}
+                        wrapLongLines={isWrapped}
+                        codeTagProps={{
+                            style: {
+                                fontFamily: GeistMono.style.fontFamily,
+                                fontSize: '0.9em',
+                                whiteSpace: isWrapped ? 'pre-wrap' : 'pre',
+                                overflowWrap: isWrapped ? 'break-word' : 'normal',
+                                wordBreak: isWrapped ? 'break-word' : 'keep-all'
+                            }
+                        }}
+                    >
+                        {children}
+                    </SyntaxHighlighter>
                 </div>
             );
         };
@@ -960,22 +908,21 @@ const HomeContent = () => {
 
         const LinkPreview = ({ href, title }: { href: string, title?: string }) => {
             const domain = new URL(href).hostname;
-
             return (
-                <div className="flex flex-col bg-white dark:bg-neutral-800 text-xs m-0">
-                    <div className="flex items-center h-6 space-x-1.5 px-2 pt-2 text-xs text-neutral-600 dark:text-neutral-300">
+                <div className="flex flex-col bg-white dark:bg-neutral-800 text-xs rounded-lg overflow-hidden">
+                    <div className="flex items-center space-x-1.5 px-3 py-2 text-neutral-600 dark:text-neutral-300">
                         <Image
                             src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
                             alt=""
-                            width={12}
-                            height={12}
+                            width={16}
+                            height={16}
                             className="rounded-sm"
                         />
                         <span className="truncate font-medium">{domain}</span>
                     </div>
                     {title && (
-                        <div className="px-2 pb-2 pt-1">
-                            <h3 className="font-normal text-sm m-0 text-neutral-700 dark:text-neutral-200 line-clamp-3">
+                        <div className="px-3 pb-2 pt-1">
+                            <h3 className="font-normal text-sm text-neutral-700 dark:text-neutral-200 line-clamp-3">
                                 {title}
                             </h3>
                         </div>
@@ -986,16 +933,15 @@ const HomeContent = () => {
 
         const renderHoverCard = (href: string, text: React.ReactNode, isCitation: boolean = false, citationText?: string) => {
             const title = citationText || (typeof text === 'string' ? text : '');
-            
             return (
-                <HoverCard openDelay={10}>
+                <HoverCard openDelay={100}>
                     <HoverCardTrigger asChild>
                         <Link
                             href={href}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={isCitation
-                                ? "cursor-pointer text-xs text-primary py-0.5 px-1.5 m-0 bg-primary/10 dark:bg-primary/20 rounded-full no-underline font-medium"
+                                ? "text-xs text-primary py-0.5 px-1.5 bg-primary/10 dark:bg-primary/20 rounded-full no-underline font-medium"
                                 : "text-primary dark:text-primary-light no-underline hover:underline font-medium"}
                         >
                             {text}
@@ -1005,7 +951,7 @@ const HomeContent = () => {
                         side="top"
                         align="start"
                         sideOffset={5}
-                        className="w-56 p-0 shadow-sm border border-neutral-200 dark:border-neutral-700 rounded-md overflow-hidden"
+                        className="w-64 p-0 shadow-lg border border-neutral-200 dark:border-neutral-700 rounded-lg"
                     >
                         <LinkPreview href={href} title={title} />
                     </HoverCardContent>
@@ -1035,7 +981,7 @@ const HomeContent = () => {
             paragraph(children) {
                 if (typeof children === 'string' && children.includes('$')) {
                     return (
-                        <p className="my-5 leading-relaxed text-neutral-700 dark:text-neutral-300">
+                        <p className="my-4 leading-relaxed text-neutral-700 dark:text-neutral-300">
                             <Latex
                                 delimiters={[
                                     { left: '$$', right: '$$', display: true },
@@ -1048,7 +994,7 @@ const HomeContent = () => {
                         </p>
                     );
                 }
-                return <p className="my-5 leading-relaxed text-neutral-700 dark:text-neutral-300">{children}</p>;
+                return <p className="my-4 leading-relaxed text-neutral-700 dark:text-neutral-300">{children}</p>;
             },
             code(children, language) {
                 return <CodeBlock language={language} key={generateKey()}>{String(children)}</CodeBlock>;
@@ -1056,7 +1002,6 @@ const HomeContent = () => {
             link(href, text) {
                 const citationIndex = citationLinks.findIndex(link => link.link === href);
                 if (citationIndex !== -1) {
-                    // For citations, show the citation text in the hover card
                     const citationText = citationLinks[citationIndex].text;
                     return (
                         <sup key={generateKey()}>
@@ -1071,14 +1016,13 @@ const HomeContent = () => {
             heading(children, level) {
                 const HeadingTag = `h${level}` as keyof JSX.IntrinsicElements;
                 const sizeClasses = {
-                    1: "text-2xl md:text-3xl font-extrabold mt-8 mb-4",
-                    2: "text-xl md:text-2xl font-bold mt-7 mb-3",
-                    3: "text-lg md:text-xl font-semibold mt-6 mb-3",
-                    4: "text-base md:text-lg font-medium mt-5 mb-2",
-                    5: "text-sm md:text-base font-medium mt-4 mb-2",
-                    6: "text-xs md:text-sm font-medium mt-4 mb-2",
+                    1: "text-3xl font-bold mt-8 mb-4",
+                    2: "text-2xl font-semibold mt-7 mb-3",
+                    3: "text-xl font-semibold mt-6 mb-3",
+                    4: "text-lg font-medium mt-5 mb-2",
+                    5: "text-base font-medium mt-4 mb-2",
+                    6: "text-sm font-medium mt-4 mb-2",
                 }[level] || "";
-
                 return (
                     <HeadingTag className={`${sizeClasses} text-neutral-900 dark:text-neutral-50 tracking-tight`}>
                         {children}
@@ -1088,7 +1032,7 @@ const HomeContent = () => {
             list(children, ordered) {
                 const ListTag = ordered ? 'ol' : 'ul';
                 return (
-                    <ListTag className={`my-5 pl-6 space-y-2 text-neutral-700 dark:text-neutral-300 ${ordered ? 'list-decimal' : 'list-disc'}`}>
+                    <ListTag className={`my-4 pl-6 space-y-2 text-neutral-700 dark:text-neutral-300 ${ordered ? 'list-decimal' : 'list-disc'}`}>
                         {children}
                     </ListTag>
                 );
@@ -1098,16 +1042,16 @@ const HomeContent = () => {
             },
             blockquote(children) {
                 return (
-                    <blockquote className="my-6 border-l-4 border-primary/30 dark:border-primary/20 pl-4 py-1 text-neutral-700 dark:text-neutral-300 italic bg-neutral-50 dark:bg-neutral-900/50 rounded-r-md">
+                    <blockquote className="my-6 border-l-4 border-primary/30 dark:border-primary/20 pl-4 py-2 text-neutral-700 dark:text-neutral-300 italic bg-neutral-50 dark:bg-neutral-900/50 rounded-r-lg">
                         {children}
                     </blockquote>
                 );
             },
             table(children) {
                 return (
-                    <div className="w-full my-6 overflow-hidden rounded-md">
-                        <div className="w-full overflow-x-auto rounded-md border border-neutral-200 dark:border-neutral-800 shadow-sm">
-                            <table className="w-full border-collapse min-w-full divide-y divide-neutral-200 dark:divide-neutral-800 m-0">
+                    <div className="w-full my-6 overflow-hidden rounded-lg shadow-sm">
+                        <div className="w-full overflow-x-auto border border-neutral-200 dark:border-neutral-800">
+                            <table className="w-full border-collapse min-w-full divide-y divide-neutral-200 dark:divide-neutral-800">
                                 {children}
                             </table>
                         </div>
@@ -1124,12 +1068,10 @@ const HomeContent = () => {
             tableCell(children, flags) {
                 const align = flags.align ? `text-${flags.align}` : 'text-left';
                 const isHeader = flags.header;
-
                 return isHeader ? (
                     <th className={cn(
-                        "px-4 py-2.5 text-sm font-semibold text-neutral-900 dark:text-neutral-50",
+                        "px-4 py-3 text-sm font-semibold text-neutral-900 dark:text-neutral-50",
                         "bg-neutral-100 dark:bg-neutral-800/90",
-                        "whitespace-nowrap",
                         align
                     )}>
                         {children}
@@ -1161,14 +1103,13 @@ const HomeContent = () => {
         };
 
         return (
-            <div className="markdown-body prose prose-neutral dark:prose-invert max-w-none dark:text-neutral-200 font-sans">
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-base font-sans">
                 <Marked renderer={renderer}>
                     {content}
                 </Marked>
             </div>
         );
     };
-
 
     const lastUserMessageIndex = useMemo(() => {
         for (let i = messages.length - 1; i >= 0; i--) {
@@ -1180,10 +1121,8 @@ const HomeContent = () => {
     }, [messages]);
 
     useEffect(() => {
-        // Reset manual scroll when streaming starts
         if (status === 'streaming') {
             setHasManuallyScrolled(false);
-            // Initial scroll to bottom when streaming starts
             if (bottomRef.current) {
                 isAutoScrollingRef.current = true;
                 bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -1193,14 +1132,8 @@ const HomeContent = () => {
 
     useEffect(() => {
         let scrollTimeout: NodeJS.Timeout;
-
         const handleScroll = () => {
-            // Clear any pending timeout
-            if (scrollTimeout) {
-                clearTimeout(scrollTimeout);
-            }
-
-            // If we're not auto-scrolling and we're streaming, it must be a user scroll
+            if (scrollTimeout) clearTimeout(scrollTimeout);
             if (!isAutoScrollingRef.current && status === 'streaming') {
                 const isAtBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
                 if (!isAtBottom) {
@@ -1211,12 +1144,10 @@ const HomeContent = () => {
 
         window.addEventListener('scroll', handleScroll);
 
-        // Auto-scroll on new content if we haven't manually scrolled
         if (status === 'streaming' && !hasManuallyScrolled && bottomRef.current) {
             scrollTimeout = setTimeout(() => {
                 isAutoScrollingRef.current = true;
                 bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-                // Reset auto-scroll flag after animation
                 setTimeout(() => {
                     isAutoScrollingRef.current = false;
                 }, 100);
@@ -1225,15 +1156,12 @@ const HomeContent = () => {
 
         return () => {
             window.removeEventListener('scroll', handleScroll);
-            if (scrollTimeout) {
-                clearTimeout(scrollTimeout);
-            }
+            if (scrollTimeout) clearTimeout(scrollTimeout);
         };
     }, [messages, suggestedQuestions, status, hasManuallyScrolled]);
 
     const handleSuggestedQuestionClick = useCallback(async (question: string) => {
         setSuggestedQuestions([]);
-
         await append({
             content: question.trim(),
             role: 'user'
@@ -1249,43 +1177,25 @@ const HomeContent = () => {
     const handleMessageUpdate = useCallback((e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (input.trim()) {
-            // Get the history *before* the message being edited
             const historyBeforeEdit = messages.slice(0, editingMessageIndex);
-            
-            // Get the original message to preserve attachments if any
             const originalMessage = messages[editingMessageIndex];
-            
-            // Update the hook's message state to remove messages after the edited one
             setMessages(historyBeforeEdit);
-
-            // Store the edited message content for the next step
             const editedContent = input.trim();
-            lastSubmittedQueryRef.current = editedContent; // Update ref here
-
-            // Clear the input field immediately
+            lastSubmittedQueryRef.current = editedContent;
             setInput('');
-            
-            // Reset suggested questions
             setSuggestedQuestions([]);
-            
-            // Extract attachments from the original message
             const attachments = originalMessage?.experimental_attachments || [];
-            
-            // Append the edited message with proper attachments using chatRequestOptions format
             append(
                 {
-                    role: 'user', // Role is always 'user' for edited messages
+                    role: 'user',
                     content: editedContent,
                 },
                 {
                     experimental_attachments: attachments
                 }
             );
-
-            // Reset editing state
             setIsEditingMessage(false);
             setEditingMessageIndex(-1);
-
         } else {
             toast.error("Please enter a valid message.");
         }
@@ -1295,11 +1205,12 @@ const HomeContent = () => {
         return (
             <Link href="/about">
                 <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
-                    className="rounded-full w-8 h-8 bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
+                    className="h-9 w-9 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
+                    aria-label="About"
                 >
-                    <Info className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
+                    <Info className="h-5 w-5" />
                 </Button>
             </Link>
         );
@@ -1309,42 +1220,40 @@ const HomeContent = () => {
 
     const Navbar: React.FC<NavbarProps> = () => {
         return (
-            <div className={cn(
-                "fixed top-0 left-0 right-0 z-[60] flex justify-between items-center p-4",
-                // Add opaque background only after submit
-                status === 'ready' ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" : "bg-background",
-            )}>
-                <div className="flex items-center gap-4">
-                    <Link href="/new">
-                        <Button
-                            type="button"
-                            variant={'secondary'}
-                            className="rounded-full bg-accent hover:bg-accent/80 backdrop-blur-sm group transition-all hover:scale-105 pointer-events-auto"
-                        >
-                            <Plus size={18} className="group-hover:rotate-90 transition-all" />
-                            <span className="text-sm ml-2 group-hover:block hidden animate-in fade-in duration-300">
-                                New
-                            </span>
-                        </Button>
-                    </Link>
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-neutral-200 dark:border-neutral-800">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between h-16">
+                        <div className="flex items-center gap-3">
+                            <Link href="/" className="flex items-center gap-2">
+                                <Image
+                                    src="/aida-logo.png"
+                                    alt="AIDA"
+                                    width={100}
+                                    height={64}
+                                    
+                                    unoptimized
+                                />
+                                
+                            </Link>
+                            <Link href="/new">
+                                <Button
+                                    variant="outline"
+                                    className="rounded-lg bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all"
+                                    aria-label="New chat"
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    New Chat
+                                </Button>
+                            </Link>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            
+                            <AboutButton />
+                            <ThemeToggle />
+                        </div>
+                    </div>
                 </div>
-                <div className='flex items-center space-x-4'>
-                    <Link
-                        target="_blank"
-                        href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzaidmukaddam%2Fscira&env=XAI_API_KEY,OPENAI_API_KEY,GROQ_API_KEY,E2B_API_KEY,ELEVENLABS_API_KEY,TAVILY_API_KEY,EXA_API_KEY,TMDB_API_KEY,YT_ENDPOINT,FIRECRAWL_API_KEY,OPENWEATHER_API_KEY,SANDBOX_TEMPLATE_ID,GOOGLE_MAPS_API_KEY,MAPBOX_ACCESS_TOKEN,TRIPADVISOR_API_KEY,AVIATION_STACK_API_KEY,CRON_SECRET,BLOB_READ_WRITE_TOKEN,NEXT_PUBLIC_MAPBOX_TOKEN,NEXT_PUBLIC_POSTHOG_KEY,NEXT_PUBLIC_POSTHOG_HOST,NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,MEM0_API_KEY,MEM0_ORG_ID,MEM0_PROJECT_ID,SMITHERY_API_KEY&envDescription=API%20keys%20and%20configuration%20required%20for%20Scira%20to%20function%20(including%20SMITHERY_API_KEY)"
-                        className="flex flex-row gap-2 items-center py-1.5 px-2 rounded-md 
-                            bg-accent hover:bg-accent/80
-                            backdrop-blur-sm text-foreground shadow-sm text-sm
-                            transition-all duration-200"
-                    >
-                        <VercelIcon size={14} />
-                        <span className='hidden sm:block'>Deploy with Vercel</span>
-                        <span className='sm:hidden block'>Deploy</span>
-                    </Link>
-                    <AboutButton />
-                    <ThemeToggle />
-                </div>
-            </div>
+            </nav>
         );
     };
 
@@ -1356,33 +1265,20 @@ const HomeContent = () => {
         setSuggestedQuestions([]);
     }, []);
 
-
     const memoizedMessages = useMemo(() => {
-        // Create a shallow copy
         const msgs = [...messages];
-
         return msgs.filter((message) => {
-            // Keep all user messages
             if (message.role === 'user') return true;
-
-            // For assistant messages
             if (message.role === 'assistant') {
-                // Keep messages that have tool invocations
-                if (message.parts?.some(part => part.type === 'tool-invocation')) {
-                    return true;
-                }
-                // Keep messages that have text parts but no tool invocations
+                if (message.parts?.some(part => part.type === 'tool-invocation')) return true;
                 if (message.parts?.some(part => part.type === 'text') ||
-                    !message.parts?.some(part => part.type === 'tool-invocation')) {
-                    return true;
-                }
+                    !message.parts?.some(part => part.type === 'tool-invocation')) return true;
                 return false;
             }
             return false;
         });
     }, [messages]);
 
-    // Track visibility state for each reasoning section using messageIndex-partIndex as key
     const [reasoningVisibilityMap, setReasoningVisibilityMap] = useState<Record<string, boolean>>({});
 
     const handleRegenerate = useCallback(async () => {
@@ -1390,23 +1286,16 @@ const HomeContent = () => {
             toast.error("Please wait for the current response to complete!");
             return;
         }
-
         const lastUserMessage = messages.findLast(m => m.role === 'user');
         if (!lastUserMessage) return;
-
-        // Remove the last assistant message
         const newMessages = messages.slice(0, -1);
         setMessages(newMessages);
         setSuggestedQuestions([]);
-
-        // Resubmit the last user message
         await reload();
     }, [status, messages, setMessages, reload]);
 
-    // Add this type at the top with other interfaces
     type MessagePart = TextUIPart | ReasoningUIPart | ToolInvocationUIPart | SourceUIPart;
 
-    // Update the renderPart function signature
     const renderPart = (
         part: MessagePart,
         messageIndex: number,
@@ -1414,26 +1303,18 @@ const HomeContent = () => {
         parts: MessagePart[],
         message: any,
     ) => {
-        // First, update timing data for reasoning parts directly in the render function
         if (part.type === "reasoning") {
             const sectionKey = `${messageIndex}-${partIndex}`;
-            
-            // Initialize timing data if it doesn't exist
             if (!reasoningTimings[sectionKey]) {
-                // Use a functional state update to avoid stale state issues
                 setReasoningTimings(prev => ({
                     ...prev,
                     [sectionKey]: { startTime: Date.now() }
                 }));
             }
-            
-            // Check if reasoning is complete but we haven't recorded the end time
             const isComplete = parts.some((p, i) => 
                 i > partIndex && (p.type === "text" || p.type === "tool-invocation")
             );
-            
             if (isComplete && reasoningTimings[sectionKey] && !reasoningTimings[sectionKey].endTime) {
-                // Set end time if reasoning is complete and it hasn't been set yet
                 setReasoningTimings(prev => ({
                     ...prev,
                     [sectionKey]: {
@@ -1443,44 +1324,40 @@ const HomeContent = () => {
                 }));
             }
         }
-        
-        // Case 1: Skip rendering text parts that should be superseded by tool invocations
+
         if (part.type === "text") {
-            // Skip empty text parts entirely
             if (!part.text || part.text.trim() === "") return null;
-            
-            // Check if this text part should be hidden because a tool invocation will show the same info
-            const hasRelatedToolInvocation = parts.some(p => 
-                p.type === 'tool-invocation'
-                // Don't need direct comparison between different types
-            );
-            
-            // If this is a summary text before/after a tool invocation, don't render it
-            if (partIndex === 0 && hasRelatedToolInvocation) {
-                return null;
-            }
+            const hasRelatedToolInvocation = parts.some(p => p.type === 'tool-invocation');
+            if (partIndex === 0 && hasRelatedToolInvocation) return null;
         }
 
         switch (part.type) {
             case "text":
                 return (
-                    <div key={`${messageIndex}-${partIndex}-text`}>
-                        <div className="flex items-center justify-between mt-5 mb-2">
+                    <div key={`${messageIndex}-${partIndex}-text`} className="mt-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
-                                <Image src="/scira.png" alt="Scira" className='size-6 invert dark:invert-0' width={100} height={100} unoptimized quality={100} />
-                                <h2 className="text-lg font-semibold font-syne text-neutral-800 dark:text-neutral-200">
-                                    Scira AI
+                                <div className="flex items-center space-x-1">
+                                    <div className="w-2 h-2 bg-neutral-900 dark:bg-neutral-100 rounded-full animate-bounce-dot1"></div>
+                                    <div className="w-2 h-2 bg-neutral-900 dark:bg-neutral-100 rounded-full animate-bounce-dot2"></div>
+                                    <div className="w-2 h-2 bg-neutral-900 dark:bg-neutral-100 rounded-full animate-bounce-dot3"></div>
+                                </div>
+                                <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                                    AIDA
                                 </h2>
                             </div>
+                            </div>
                             {status === 'ready' && (
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-2">
                                     <Button
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => handleRegenerate()}
-                                        className="h-8 px-2 text-xs rounded-full"
+                                        className="h-9 w-9 rounded-full"
+                                        aria-label="Regenerate response"
                                     >
-                                        <RefreshCw className="h-3.5 w-3.5" />
+                                        <RefreshCw className="h-4 w-4" />
                                     </Button>
                                     <CopyButton text={part.text} />
                                 </div>
@@ -1491,34 +1368,20 @@ const HomeContent = () => {
                 );
             case "reasoning": {
                 const sectionKey = `${messageIndex}-${partIndex}`;
-                
-                // Case 2: Enhanced handling of reasoning with better parallel tracking
-                // Check if there's a tool invocation running in parallel with this reasoning
-                const hasParallelToolInvocation = parts.some(p => 
-                    p.type === 'tool-invocation'
-                );
-                
-                // Determine if reasoning is complete (has a text part or tool invocation following it)
+                const hasParallelToolInvocation = parts.some(p => p.type === 'tool-invocation');
                 const isComplete = parts.some((p, i) => 
                     i > partIndex && (p.type === "text" || p.type === "tool-invocation")
                 );
-                
-                // Calculate timing data
                 const timing = reasoningTimings[sectionKey];
                 let duration = null;
                 let liveElapsedTime = null;
-                
                 if (timing) {
                     if (timing.endTime) {
-                        // Completed reasoning - show fixed duration
                         duration = ((timing.endTime - timing.startTime) / 1000).toFixed(3);
                     } else {
-                        // Ongoing reasoning - calculate live elapsed time
                         liveElapsedTime = ((Date.now() - timing.startTime) / 1000).toFixed(3);
                     }
                 }
-                
-                // Get the most recent tool invocation if any is running in parallel
                 const parallelTool = hasParallelToolInvocation ? 
                     parts.find(p => p.type === 'tool-invocation')?.toolInvocation?.toolName : null;
 
@@ -1526,9 +1389,9 @@ const HomeContent = () => {
                     <motion.div
                         key={`${messageIndex}-${partIndex}-reasoning`}
                         id={`reasoning-${messageIndex}`}
-                        className="my-4"
+                        className="my-6"
                     >
-                        <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+                        <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden shadow-sm">
                             <button
                                 onClick={() => setReasoningVisibilityMap(prev => ({
                                     ...prev,
@@ -1669,35 +1532,25 @@ const HomeContent = () => {
         }
     };
 
-    // Add near other state declarations in HomeContent
     interface ReasoningTiming {
         startTime: number;
         endTime?: number;
     }
 
     const [reasoningTimings, setReasoningTimings] = useState<Record<string, ReasoningTiming>>({});
-    
-    // For active reasoning sections, update timers every 100ms
+
     useEffect(() => {
-        // Only run this effect when reasoning is occurring
         const activeReasoningSections = Object.entries(reasoningTimings)
             .filter(([_, timing]) => !timing.endTime);
-            
         if (activeReasoningSections.length === 0) return;
-        
-        // Update once immediately
         const updateTimes = () => {
             const now = Date.now();
             const updatedTimes: Record<string, number> = {};
-            
             activeReasoningSections.forEach(([key, timing]) => {
                 updatedTimes[key] = (now - timing.startTime) / 1000;
             });
         };
-        
         updateTimes();
-        
-        // Then set up interval for updates
         const interval = setInterval(updateTimes, 100);
         return () => clearInterval(interval);
     }, [reasoningTimings]);
@@ -1708,7 +1561,6 @@ const HomeContent = () => {
                 if (part.type === "reasoning") {
                     const sectionKey = `${messageIndex}-${partIndex}`;
                     const isComplete = message.parts[partIndex + 1]?.type === "text";
-
                     if (!reasoningTimings[sectionKey]) {
                         setReasoningTimings(prev => ({
                             ...prev,
@@ -1728,326 +1580,31 @@ const HomeContent = () => {
         });
     }, [messages, reasoningTimings]);
 
-    const WidgetSection = memo(() => {
-        const [currentTime, setCurrentTime] = useState(new Date());
-        const timerRef = useRef<NodeJS.Timeout>();
+   
 
-        useEffect(() => {
-            // Sync with the nearest second
-            const now = new Date();
-            const delay = 1000 - now.getMilliseconds();
-
-            // Initial sync
-            const timeout = setTimeout(() => {
-                setCurrentTime(new Date());
-
-                // Then start the interval
-                timerRef.current = setInterval(() => {
-                    setCurrentTime(new Date());
-                }, 1000);
-            }, delay);
-
-            return () => {
-                clearTimeout(timeout);
-                if (timerRef.current) {
-                    clearInterval(timerRef.current);
-                }
-            };
-        }, []);
-
-        // Get user's timezone
-        const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-        // Format date and time with timezone
-        const dateFormatter = new Intl.DateTimeFormat('en-US', {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            timeZone: timezone
-        });
-
-        const timeFormatter = new Intl.DateTimeFormat('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-            timeZone: timezone
-        });
-
-        const formattedDate = dateFormatter.format(currentTime);
-        const formattedTime = timeFormatter.format(currentTime);
-
-        const handleDateTimeClick = useCallback(() => {
-            if (status !== 'ready') return;
-
-            append({
-                content: `What's the current date and time?`,
-                role: 'user'
-            });
-
-            lastSubmittedQueryRef.current = `What's the current date and time?`;
-            setHasSubmitted(true);
-        }, []);
-
-        return (
-            <div className="mt-8 w-full">
-                <div className="flex flex-wrap gap-3 justify-center">
-                    {/* Time Widget */}
-                    <Button
-                        variant="outline"
-                        className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:shadow-sm transition-all h-auto"
-                        onClick={handleDateTimeClick}
-                    >
-                        <PhosphorClock weight="duotone" className="h-5 w-5 text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" />
-                        <span className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
-                            {formattedTime}
-                        </span>
-                    </Button>
-
-                    {/* Date Widget */}
-                    <Button
-                        variant="outline"
-                        className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:shadow-sm transition-all h-auto"
-                        onClick={handleDateTimeClick}
-                    >
-                        <CalendarBlank weight="duotone" className="h-5 w-5 text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
-                        <span className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
-                            {formattedDate}
-                        </span>
-                    </Button>
-                </div>
-            </div>
-        );
-    });
-
-    WidgetSection.displayName = 'WidgetSection';
 
     return (
-        <div className="flex flex-col !font-sans items-center min-h-screen bg-background text-foreground transition-all duration-500">
-            <Navbar />
-
-            <div className={`w-full p-2 sm:p-4 ${status === 'ready' && messages.length === 0
-                ? 'min-h-screen flex flex-col items-center justify-center' // Center everything when no messages
-                : 'mt-20 sm:mt-16' // Add top margin when showing messages
-                }`}>
-                <div className={`w-full max-w-[90%] !font-sans sm:max-w-2xl space-y-6 p-0 mx-auto transition-all duration-300`}>
-                    {status === 'ready' && messages.length === 0 && (
-                        <div className="text-center !font-sans">
-                            <h1 className="text-2xl sm:text-4xl mb-6 text-neutral-800 dark:text-neutral-100 font-syne">
-                                What do you want to explore?
-                            </h1>
-                        </div>
-                    )}
-                    <AnimatePresence>
-                        {messages.length === 0 && !hasSubmitted && (
-                            <motion.div
-                                initial={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 20 }}
-                                transition={{ duration: 0.5 }}
-                                className={cn('!mt-4')}
-                            >
-                                <FormComponent
-                                    input={input}
-                                    setInput={setInput}
-                                    attachments={attachments}
-                                    setAttachments={setAttachments}
-                                    handleSubmit={handleSubmit}
-                                    fileInputRef={fileInputRef}
-                                    inputRef={inputRef}
-                                    stop={stop}
-                                    messages={messages as any}
-                                    append={append}
-                                    selectedModel={selectedModel}
-                                    setSelectedModel={handleModelChange}
-                                    resetSuggestedQuestions={resetSuggestedQuestions}
-                                    lastSubmittedQueryRef={lastSubmittedQueryRef}
-                                    selectedGroup={selectedGroup}
-                                    setSelectedGroup={setSelectedGroup}
-                                    showExperimentalModels={true}
-                                    status={status}
-                                    setHasSubmitted={setHasSubmitted}
-                                />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Add the widget section below form when no messages */}
-                    {messages.length === 0 && (
-                        <div>
-                            <WidgetSection />
-                        </div>
-                    )}
-
-                    <div className="space-y-4 sm:space-y-6 mb-32">
-                        {memoizedMessages.map((message, index) => (
-                            <div key={index} className={`${
-                                // Add border only if this is an assistant message AND there's a next message
-                                message.role === 'assistant' && index < memoizedMessages.length - 1
-                                    ? '!mb-12 border-b border-neutral-200 dark:border-neutral-800'
-                                    : ''
-                                }`.trim()}>
-                                {message.role === 'user' && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.5 }}
-                                        className="mb-4 px-0"
-                                    >
-                                        <div className="flex-grow min-w-0">
-                                            {isEditingMessage && editingMessageIndex === index ? (
-                                                <form onSubmit={handleMessageUpdate} className="w-full">
-                                                    <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
-                                                        <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
-                                                            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                                                                Edit Query
-                                                            </span>
-                                                            <div className="bg-neutral-100 dark:bg-neutral-800 rounded-[9px] border border-neutral-200 dark:border-neutral-700 flex items-center">
-                                                                <Button
-                                                                    type="button"
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => {
-                                                                        setIsEditingMessage(false);
-                                                                        setEditingMessageIndex(-1);
-                                                                        setInput('');
-                                                                    }}
-                                                                    className="h-7 w-7 !rounded-l-lg !rounded-r-none text-neutral-500 dark:text-neutral-400 hover:text-primary"
-                                                                    disabled={status === 'submitted' || status === 'streaming'}
-                                                                >
-                                                                    <X className="h-4 w-4" />
-                                                                </Button>
-                                                                <Separator orientation="vertical" className="h-7 bg-neutral-200 dark:bg-neutral-700" />
-                                                                <Button
-                                                                    type="submit"
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-7 w-7 !rounded-r-lg !rounded-l-none text-neutral-500 dark:text-neutral-400 hover:text-primary"
-                                                                    disabled={status === 'submitted' || status === 'streaming'}
-                                                                >
-                                                                    <ArrowRight className="h-4 w-4" />
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                        <div className="p-4">
-                                                            <textarea
-                                                                value={input}
-                                                                onChange={(e) => setInput(e.target.value)}
-                                                                rows={3}
-                                                                className="w-full resize-none rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-3 text-base text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                                placeholder="Edit your message..."
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            ) : (
-                                                <div className="group relative">
-                                                    <div className="relative">
-                                                        <p className="text-xl font-medium font-sans break-words text-neutral-900 dark:text-neutral-100 pr-10 sm:pr-12">
-                                                            {message.content}
-                                                        </p>
-                                                        {!isEditingMessage && index === lastUserMessageIndex && (
-                                                            <div className="absolute -right-2 top-0 opacity-0 group-hover:opacity-100 transition-opacity bg-transparent rounded-[9px] border border-neutral-200 dark:border-neutral-700 flex items-center">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => handleMessageEdit(index)}
-                                                                    className="h-7 w-7 !rounded-l-lg !rounded-r-none text-neutral-500 dark:text-neutral-400 hover:text-primary"
-                                                                    disabled={status === 'submitted' || status === 'streaming'}
-                                                                >
-                                                                    <svg
-                                                                        width="15"
-                                                                        height="15"
-                                                                        viewBox="0 0 15 15"
-                                                                        fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        className="h-4 w-4"
-                                                                    >
-                                                                        <path
-                                                                            d="M12.1464 1.14645C12.3417 0.951184 12.6583 0.951184 12.8535 1.14645L14.8535 3.14645C15.0488 3.34171 15.0488 3.65829 14.8535 3.85355L10.9109 7.79618C10.8349 7.87218 10.7471 7.93543 10.651 7.9835L6.72359 9.94721C6.53109 10.0435 6.29861 10.0057 6.14643 9.85355C5.99425 9.70137 5.95652 9.46889 6.05277 9.27639L8.01648 5.34897C8.06455 5.25283 8.1278 5.16507 8.2038 5.08907L12.1464 1.14645ZM12.5 2.20711L8.91091 5.79618L7.87266 7.87267L9.94915 6.83442L13.5382 3.24535L12.5 2.20711ZM8.99997 1.49997C9.27611 1.49997 9.49997 1.72383 9.49997 1.99997C9.49997 2.27611 9.27611 2.49997 8.99997 2.49997H4.49997C3.67154 2.49997 2.99997 3.17154 2.99997 3.99997V11C2.99997 11.8284 3.67154 12.5 4.49997 12.5H11.5C12.3284 12.5 13 11.8284 13 11V6.49997C13 6.22383 13.2238 5.99997 13.5 5.99997C13.7761 5.99997 14 6.22383 14 6.49997V11C14 12.3807 12.8807 13.5 11.5 13.5H4.49997C3.11926 13.5 1.99997 12.3807 1.99997 11V3.99997C1.99997 2.61926 3.11926 1.49997 4.49997 1.49997H8.99997Z"
-                                                                            fill="currentColor"
-                                                                            fillRule="evenodd"
-                                                                            clipRule="evenodd"
-                                                                        />
-                                                                    </svg>
-                                                                </Button>
-                                                                <Separator orientation="vertical" className="h-7" />
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => {
-                                                                        navigator.clipboard.writeText(message.content);
-                                                                        toast.success("Copied to clipboard");
-                                                                    }}
-                                                                    className="h-7 w-7 !rounded-r-lg !rounded-l-none text-neutral-500 dark:text-neutral-400 hover:text-primary"
-                                                                >
-                                                                    <Copy className="h-4 w-4" />
-                                                                </Button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    {message.experimental_attachments && message.experimental_attachments.length > 0 && (
-                                                        <AttachmentsBadge attachments={message.experimental_attachments} />
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </motion.div>
-                                )}
-
-                                {message.role === 'assistant' && (
-                                    <>
-                                        {message.parts?.map((part, partIndex) =>
-                                            renderPart(
-                                                part as MessagePart,
-                                                index,
-                                                partIndex,
-                                                message.parts as MessagePart[],
-                                                message,
-                                            )
-                                        )}
-                                        
-                                        {/* Add suggested questions if this is the last message and it's from the assistant */}
-                                        {index === memoizedMessages.length - 1 && suggestedQuestions.length > 0 && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: 20 }}
-                                                transition={{ duration: 0.5 }}
-                                                className="w-full max-w-xl sm:max-w-2xl mt-6"
-                                            >
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <AlignLeft className="w-5 h-5 text-primary" />
-                                                    <h2 className="font-semibold text-base text-neutral-800 dark:text-neutral-200">Suggested questions</h2>
-                                                </div>
-                                                <div className="space-y-2 flex flex-col">
-                                                    {suggestedQuestions.map((question, index) => (
-                                                        <Button
-                                                            key={index}
-                                                            variant="ghost"
-                                                            className="w-fit font-medium rounded-2xl p-1 justify-start text-left h-auto py-2 px-4 bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-700 whitespace-normal"
-                                                            onClick={() => handleSuggestedQuestionClick(question)}
-                                                        >
-                                                            {question}
-                                                        </Button>
-                                                    ))}
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        ))}
+        <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900 font-sans">
+            <Header />
+            <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
+                {status === 'ready' && messages.length === 0 && (
+                    <div className="text-center py-12">
+                        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
+                            Explore with AIDA
+                        </h1>
+                        <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+                            Ask questions, get insights, and discover new information with our advanced AI assistant.
+                        </p>
                     </div>
-                    <div ref={bottomRef} />
-                </div>
+                )}
 
                 <AnimatePresence>
-                    {(messages.length > 0 || hasSubmitted) && (
+                    {messages.length === 0 && !hasSubmitted && (
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
                             transition={{ duration: 0.5 }}
-                            className="fixed bottom-4 left-0 right-0 w-full max-w-[90%] sm:max-w-2xl mx-auto z-20"
+                            className="mt-8"
                         >
                             <FormComponent
                                 input={input}
@@ -2066,14 +1623,198 @@ const HomeContent = () => {
                                 lastSubmittedQueryRef={lastSubmittedQueryRef}
                                 selectedGroup={selectedGroup}
                                 setSelectedGroup={setSelectedGroup}
-                                showExperimentalModels={false}
+                                showExperimentalModels={true}
                                 status={status}
                                 setHasSubmitted={setHasSubmitted}
                             />
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+
+            
+                <div className="space-y-8 mt-8">
+                    {memoizedMessages.map((message, index) => (
+                        <div key={index} className={cn(
+                            message.role === 'assistant' && index < memoizedMessages.length - 1
+                                ? 'pb-8 border-b border-neutral-200 dark:border-neutral-800'
+                                : ''
+                        )}>
+                            {message.role === 'user' && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5 }}
+                                    className="mb-6"
+                                >
+                                    <div className="group relative">
+                                        {isEditingMessage && editingMessageIndex === index ? (
+                                            <form onSubmit={handleMessageUpdate} className="w-full">
+                                                <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                                                    <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
+                                                        <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                                                            Edit Message
+                                                        </span>
+                                                        <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => {
+                                                                    setIsEditingMessage(false);
+                                                                    setEditingMessageIndex(-1);
+                                                                    setInput('');
+                                                                }}
+                                                                className="h-8 w-8 rounded-l-lg"
+                                                                disabled={status === 'submitted' || status === 'streaming'}
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                type="submit"
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-r-lg"
+                                                                disabled={status === 'submitted' || status === 'streaming'}
+                                                            >
+                                                                <ArrowRight className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-4">
+                                                        <textarea
+                                                            value={input}
+                                                            onChange={(e) => setInput(e.target.value)}
+                                                            rows={4}
+                                                            className="w-full resize-none rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-3 text-base text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                            placeholder="Edit your message..."
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        ) : (
+                                            <div className="relative">
+                                                <p className="text-lg font-medium text-neutral-900 dark:text-neutral-100 pr-12">
+                                                    {message.content}
+                                                </p>
+                                                {!isEditingMessage && index === lastUserMessageIndex && (
+                                                    <div className="absolute right-0 top-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => handleMessageEdit(index)}
+                                                            className="h-8 w-8 rounded-l-lg"
+                                                            disabled={status === 'submitted' || status === 'streaming'}
+                                                        >
+                                                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                                                                <path
+                                                                    d="M12.1464 1.14645C12.3417 0.951184 12.6583 0.951184 12.8535 1.14645L14.8535 3.14645C15.0488 3.34171 15.0488 3.65829 14.8535 3.85355L10.9109 7.79618C10.8349 7.87218 10.7471 7.93543 10.651 7.9835L6.72359 9.94721C6.53109 10.0435 6.29861 10.0057 6.14643 9.85355C5.99425 9.70137 5.95652 9.46889 6.05277 9.27639L8.01648 5.34897C8.06455 5.25283 8.1278 5.16507 8.2038 5.08907L12.1464 1.14645ZM12.5 2.20711L8.91091 5.79618L7.87266 7.87267L9.94915 6.83442L13.5382 3.24535L12.5 2.20711ZM8.99997 1.49997C9.27611 1.49997 9.49997 1.72383 9.49997 1.99997C9.49997 2.27611 9.27611 2.49997 8.99997 2.49997H4.49997C3.67154 2.49997 2.99997 3.17154 2.99997 3.99997V11C2.99997 11.8284 3.67154 12.5 4.49997 12.5H11.5C12.3284 12.5 13 11.8284 13 11V6.49997C13 6.22383 13.2238 5.99997 13.5 5.99997C13.7761 5.99997 14 6.22383 14 6.49997V11C14 12.3807 12.8807 13.5 11.5 13.5H4.49997C3.11926 13.5 1.99997 12.3807 1.99997 11V3.99997C1.99997 2.61926 3.11926 1.49997 4.49997 1.49997H8.99997Z"
+                                                                    fill="currentColor"
+                                                                    fillRule="evenodd"
+                                                                    clipRule="evenodd"
+                                                                />
+                                                            </svg>
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(message.content);
+                                                                toast.success("Copied to clipboard");
+                                                            }}
+                                                            className="h-8 w-8 rounded-r-lg"
+                                                        >
+                                                            <Copy className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        {message.experimental_attachments && message.experimental_attachments.length > 0 && (
+                                            <AttachmentsBadge attachments={message.experimental_attachments} />
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {message.role === 'assistant' && (
+                                <>
+                                    {message.parts?.map((part, partIndex) =>
+                                        renderPart(
+                                            part as MessagePart,
+                                            index,
+                                            partIndex,
+                                            message.parts as MessagePart[],
+                                            message,
+                                        )
+                                    )}
+                                    
+                                    {index === memoizedMessages.length - 1 && suggestedQuestions.length > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 20 }}
+                                            transition={{ duration: 0.5 }}
+                                            className="mt-8"
+                                        >
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <AlignLeft className="w-5 h-5 text-primary" />
+                                                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Suggested Questions</h2>
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                {suggestedQuestions.map((question, index) => (
+                                                    <Button
+                                                        key={index}
+                                                        variant="outline"
+                                                        className="justify-start text-left h-auto py-3 px-4 rounded-lg bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-900 dark:text-neutral-100 whitespace-normal"
+                                                        onClick={() => handleSuggestedQuestionClick(question)}
+                                                    >
+                                                        {question}
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    ))}
+                </div>
+                <div ref={bottomRef} />
+            </main>
+
+            <AnimatePresence>
+                {(messages.length > 0 || hasSubmitted) && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.5 }}
+                        className="fixed bottom-4 left-0 right-0 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 z-50"
+                    >
+                        <FormComponent
+                            input={input}
+                            setInput={setInput}
+                            attachments={attachments}
+                            setAttachments={setAttachments}
+                            handleSubmit={handleSubmit}
+                            fileInputRef={fileInputRef}
+                            inputRef={inputRef}
+                            stop={stop}
+                            messages={messages as any}
+                            append={append}
+                            selectedModel={selectedModel}
+                            setSelectedModel={handleModelChange}
+                            resetSuggestedQuestions={resetSuggestedQuestions}
+                            lastSubmittedQueryRef={lastSubmittedQueryRef}
+                            selectedGroup={selectedGroup}
+                            setSelectedGroup={setSelectedGroup}
+                            showExperimentalModels={false}
+                            status={status}
+                            setHasSubmitted={setHasSubmitted}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
@@ -2085,7 +1826,6 @@ const LoadingFallback = () => (
                 <div className="absolute inset-0 rounded-full border-4 border-neutral-200 dark:border-neutral-800" />
                 <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
             </div>
-
             <p className="text-sm text-neutral-600 dark:text-neutral-400 animate-pulse">
                 Loading...
             </p>
@@ -2113,7 +1853,7 @@ const ToolInvocationListView = memo(
                     if (!features || features.length === 0) return null;
 
                     return (
-                        <Card className="w-full my-4 overflow-hidden bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
+                        <Card className="w-full my-4 overflow-hidden bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 shadow-sm">
                             <div className="relative w-full h-[60vh]">
                                 <div className="absolute top-4 left-4 z-10 flex gap-2">
                                     <Badge
@@ -2123,7 +1863,6 @@ const ToolInvocationListView = memo(
                                         {features.length} Locations Found
                                     </Badge>
                                 </div>
-
                                 <MapComponent
                                     center={{
                                         lat: features[0].geometry.coordinates[1],
@@ -2140,11 +1879,9 @@ const ToolInvocationListView = memo(
                                     zoom={features.length > 1 ? 12 : 15}
                                 />
                             </div>
-
                             <div className="max-h-[300px] overflow-y-auto border-t border-neutral-200 dark:border-neutral-800">
                                 {features.map((place: any, index: any) => {
                                     const isGoogleResult = place.source === 'google';
-
                                     return (
                                         <div
                                             key={place.id || index}
@@ -2163,7 +1900,6 @@ const ToolInvocationListView = memo(
                                                         <MapPin className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                                     )}
                                                 </div>
-
                                                 <div className="flex-1 min-w-0">
                                                     <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                                                         {place.name}
@@ -2177,7 +1913,6 @@ const ToolInvocationListView = memo(
                                                         {place.feature_type.replace(/_/g, ' ')}
                                                     </Badge>
                                                 </div>
-
                                                 <div className="flex gap-2">
                                                     <TooltipProvider>
                                                         <Tooltip>
@@ -2198,7 +1933,6 @@ const ToolInvocationListView = memo(
                                                             <TooltipContent>Copy Coordinates</TooltipContent>
                                                         </Tooltip>
                                                     </TooltipProvider>
-
                                                     <TooltipProvider>
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
@@ -2237,7 +1971,6 @@ const ToolInvocationListView = memo(
                             color="violet"
                         />;
                     }
-
                     return <TMDBResult result={result} />;
                 }
 
@@ -2263,7 +1996,6 @@ const ToolInvocationListView = memo(
                     return <TrendingResults result={result} type="tv" />;
                 }
 
-
                 if (toolInvocation.toolName === 'x_search') {
                     if (!result) {
                         return <SearchLoadingState
@@ -2274,14 +2006,11 @@ const ToolInvocationListView = memo(
                     }
 
                     const PREVIEW_COUNT = 3;
-
-                    // Memoized tweet component to prevent unnecessary re-renders
                     const MemoizedTweet = memo(({ id }: { id: string }) => (
                         <div className="w-full [&>div]:w-full [&>div]:mx-auto">
                             <Tweet id={id} />
                         </div>
                     ));
-
                     MemoizedTweet.displayName = 'MemoizedTweet';
 
                     const FullTweetList = memo(() => (
@@ -2299,11 +2028,10 @@ const ToolInvocationListView = memo(
                             ))}
                         </div>
                     ));
-
                     FullTweetList.displayName = 'FullTweetList';
 
                     return (
-                        <Card className="w-full my-4 overflow-hidden shadow-none">
+                        <Card className="w-full my-4 overflow-hidden shadow-none border-neutral-200 dark:border-neutral-800">
                             <CardHeader className="pb-2 flex flex-row items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <div className="h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center">
@@ -2333,9 +2061,7 @@ const ToolInvocationListView = memo(
                                         ))}
                                     </div>
                                 </div>
-
                                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-black pointer-events-none" />
-
                                 <div className="absolute bottom-0 inset-x-0 flex items-center justify-center pb-4 pt-20 bg-gradient-to-t from-white dark:from-black to-transparent">
                                     <div className="hidden sm:block">
                                         <Sheet>
@@ -2356,7 +2082,6 @@ const ToolInvocationListView = memo(
                                             </SheetContent>
                                         </Sheet>
                                     </div>
-
                                     <div className="block sm:hidden">
                                         <Drawer>
                                             <DrawerTrigger asChild>
@@ -2394,15 +2119,12 @@ const ToolInvocationListView = memo(
                     }
 
                     const youtubeResult = result as YouTubeSearchResponse;
-
-                    // Filter out videos with no meaningful content
                     const filteredVideos = youtubeResult.results.filter(video =>
                         (video.timestamps && video.timestamps.length > 0) ||
                         video.captions ||
                         video.summary
                     );
 
-                    // If no videos with content, show a message instead
                     if (filteredVideos.length === 0) {
                         return (
                             <div className="rounded-xl overflow-hidden border dark:border-neutral-800 border-neutral-200 bg-white dark:bg-neutral-900 shadow-sm p-4 text-center">
@@ -2476,7 +2198,6 @@ const ToolInvocationListView = memo(
                             color="violet"
                         />;
                     }
-
                     return <AcademicPapersCard results={result.results} />;
                 }
 
@@ -2509,9 +2230,6 @@ const ToolInvocationListView = memo(
                             </div>
                         );
                     }
-
-                    console.log(result);
-
                     return (
                         <div className="my-4">
                             <NearbySearchMapView
@@ -2602,7 +2320,6 @@ const ToolInvocationListView = memo(
                 if (toolInvocation.toolName === 'stock_chart') {
                     return (
                         <div className="flex flex-col gap-3 w-full mt-4">
-                            {/* Only show the badge when loading, hide it after results are loaded */}
                             {!result && (
                                 <Badge
                                     variant="secondary"
@@ -2615,7 +2332,6 @@ const ToolInvocationListView = memo(
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                 </Badge>
                             )}
-
                             {result?.chart && (
                                 <div className="w-full">
                                     <InteractiveStockChart
@@ -2647,7 +2363,6 @@ const ToolInvocationListView = memo(
                                 icon={args.icon || 'default'}
                                 status={result ? 'completed' : 'running'}
                             />
-
                             {result?.chart && (
                                 <div className="pt-1">
                                     <InteractiveChart chart={result.chart} />
@@ -2699,7 +2414,6 @@ const ToolInvocationListView = memo(
                         );
                     }
 
-                    // Update the error message UI with better dark mode border visibility
                     if (result.error || (result.results && result.results[0] && result.results[0].error)) {
                         const errorMessage = result.error || (result.results && result.results[0] && result.results[0].error);
                         return (
@@ -2721,7 +2435,6 @@ const ToolInvocationListView = memo(
                         );
                     }
 
-                    // Update the "no content" message UI with better dark mode border visibility
                     if (!result.results || result.results.length === 0) {
                         return (
                             <div className="border border-amber-200 dark:border-amber-500 rounded-xl my-4 p-4 bg-amber-50 dark:bg-amber-950/50">
@@ -2737,9 +2450,8 @@ const ToolInvocationListView = memo(
                         );
                     }
 
-                    // Existing rendering for successful retrieval:
                     return (
-                        <div className="border border-neutral-200 rounded-xl my-4 overflow-hidden dark:border-neutral-800 bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-900/90">
+                        <div className="border border-neutral-200 rounded-xl my-4 overflow-hidden dark:border-neutral-800 bg-gradient-to-b from-white to-neutral-50 dark:from-neutral-900 dark:to-neutral-900/90 shadow-sm">
                             <div className="p-4">
                                 <div className="flex items-start gap-4">
                                     <div className="relative w-10 h-10 flex-shrink-0">
@@ -2777,7 +2489,6 @@ const ToolInvocationListView = memo(
                                     </div>
                                 </div>
                             </div>
-
                             <div className="border-t border-neutral-200 dark:border-neutral-800">
                                 <details className="group">
                                     <summary className="w-full px-4 py-2 cursor-pointer text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors flex items-center justify-between">
@@ -2797,6 +2508,7 @@ const ToolInvocationListView = memo(
                         </div>
                     );
                 }
+
                 if (toolInvocation.toolName === 'text_translate') {
                     return <TranslationTool toolInvocation={toolInvocation} result={result} />;
                 }
@@ -2858,26 +2570,19 @@ const ToolInvocationListView = memo(
                         );
                     }
 
-                    // Live Clock component that updates every second
                     const LiveClock = memo(() => {
                         const [time, setTime] = useState(() => new Date());
                         const timerRef = useRef<NodeJS.Timeout>();
 
                         useEffect(() => {
-                            // Sync with the nearest second
                             const now = new Date();
                             const delay = 1000 - now.getMilliseconds();
-
-                            // Initial sync
                             const timeout = setTimeout(() => {
                                 setTime(new Date());
-
-                                // Then start the interval
                                 timerRef.current = setInterval(() => {
                                     setTime(new Date());
                                 }, 1000);
                             }, delay);
-
                             return () => {
                                 clearTimeout(timeout);
                                 if (timerRef.current) {
@@ -2886,7 +2591,6 @@ const ToolInvocationListView = memo(
                             };
                         }, []);
 
-                        // Format the time according to the specified timezone
                         const timezone = result.timezone || new Intl.DateTimeFormat().resolvedOptions().timeZone;
                         const formatter = new Intl.DateTimeFormat('en-US', {
                             hour: 'numeric',
@@ -2930,7 +2634,7 @@ const ToolInvocationListView = memo(
 
                     return (
                         <div className="w-full my-6">
-                            <div className="bg-white dark:bg-neutral-950 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800">
+                            <div className="bg-white dark:bg-neutral-950 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm">
                                 <div className="p-5 sm:p-6 md:p-8">
                                     <div className="flex flex-col gap-6 sm:gap-8 md:gap-10">
                                         <div>
@@ -2945,7 +2649,6 @@ const ToolInvocationListView = memo(
                                             </div>
                                             <LiveClock />
                                         </div>
-
                                         <div>
                                             <h3 className="text-xs sm:text-sm font-medium text-neutral-500 dark:text-neutral-400 tracking-wider uppercase mb-2">
                                                 Today&apos;s Date
@@ -3023,136 +2726,6 @@ const ToolInvocationListView = memo(
             [message]
         );
 
-        const TranslationTool: React.FC<{ toolInvocation: ToolInvocation; result: any }> = ({ toolInvocation, result }) => {
-            const [isPlaying, setIsPlaying] = useState(false);
-            const [audioUrl, setAudioUrl] = useState<string | null>(null);
-            const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
-            const audioRef = useRef<HTMLAudioElement | null>(null);
-            const canvasRef = useRef<HTMLCanvasElement | null>(null);
-            const waveRef = useRef<Wave | null>(null);
-
-            useEffect(() => {
-                const _audioRef = audioRef.current
-                return () => {
-                    if (_audioRef) {
-                        _audioRef.pause();
-                        _audioRef.src = '';
-                    }
-                };
-            }, []);
-
-            useEffect(() => {
-                if (audioUrl && audioRef.current && canvasRef.current) {
-                    waveRef.current = new Wave(audioRef.current, canvasRef.current);
-                    waveRef.current.addAnimation(new waveRef.current.animations.Lines({
-                        lineWidth: 1.5,
-                        lineColor: 'rgb(147, 51, 234)',
-                        count: 80,
-                        mirroredY: true,
-                    }));
-                }
-            }, [audioUrl]);
-
-            const handlePlayPause = async () => {
-                if (!audioUrl && !isGeneratingAudio) {
-                    setIsGeneratingAudio(true);
-                    try {
-                        const { audio } = await generateSpeech(result.translatedText);
-                        setAudioUrl(audio);
-                        setIsGeneratingAudio(false);
-                        // Autoplay after a short delay to ensure audio is loaded
-                        setTimeout(() => {
-                            if (audioRef.current) {
-                                audioRef.current.play();
-                                setIsPlaying(true);
-                            }
-                        }, 100);
-                    } catch (error) {
-                        console.error("Error generating speech:", error);
-                        setIsGeneratingAudio(false);
-                    }
-                } else if (audioRef.current) {
-                    if (isPlaying) {
-                        audioRef.current.pause();
-                    } else {
-                        audioRef.current.play();
-                    }
-                    setIsPlaying(!isPlaying);
-                }
-            };
-
-            const handleReset = () => {
-                if (audioRef.current) {
-                    audioRef.current.pause();
-                    audioRef.current.currentTime = 0;
-                    setIsPlaying(false);
-                }
-            };
-
-            if (!result) {
-                return (
-                    <Card className="w-full my-4 bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
-                        <CardContent className="flex items-center justify-center h-24">
-                            <div className="animate-pulse flex items-center">
-                                <div className="h-4 w-4 bg-primary rounded-full mr-2"></div>
-                                <div className="h-4 w-32 bg-primary rounded"></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                );
-            }
-
-            return (
-                <Card className="w-full my-4 shadow-none bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
-                    <CardContent className="p-4 sm:p-6">
-                        <div className="space-y-4 sm:space-y-6">
-                            <div>
-                                <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                                    The phrase <span className="font-medium text-neutral-900 dark:text-neutral-100">{toolInvocation.args.text}</span> translates from <span className="font-medium text-neutral-900 dark:text-neutral-100">{result.detectedLanguage}</span> to <span className="font-medium text-neutral-900 dark:text-neutral-100">{toolInvocation.args.to}</span> as <span className="font-medium text-primary">{result.translatedText}</span>
-                                </p>
-                            </div>
-
-                            <div className="flex items-center gap-2 sm:gap-3">
-                                <Button
-                                    onClick={handlePlayPause}
-                                    disabled={isGeneratingAudio}
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex-shrink-0"
-                                >
-                                    {isGeneratingAudio ? (
-                                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                                    ) : isPlaying ? (
-                                        <Pause className="h-4 w-4 sm:h-5 sm:w-5" />
-                                    ) : (
-                                        <PlayIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                                    )}
-                                </Button>
-
-                                <div className="flex-1 h-8 sm:h-10 bg-neutral-100 dark:bg-neutral-900 rounded-md sm:rounded-lg overflow-hidden">
-                                    <canvas
-                                        ref={canvasRef}
-                                        width="800"
-                                        height="200"
-                                        className="w-full h-full opacity-90 dark:opacity-70"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                    {audioUrl && (
-                        <audio
-                            ref={audioRef}
-                            src={audioUrl}
-                            onPlay={() => setIsPlaying(true)}
-                            onPause={() => setIsPlaying(false)}
-                            onEnded={() => { setIsPlaying(false); handleReset(); }}
-                        />
-                    )}
-                </Card>
-            );
-        };
-
         return (
             <>
                 {toolInvocations.map(
@@ -3173,6 +2746,133 @@ const ToolInvocationListView = memo(
 
 ToolInvocationListView.displayName = 'ToolInvocationListView';
 
+const TranslationTool: React.FC<{ toolInvocation: ToolInvocation; result: any }> = ({ toolInvocation, result }) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [audioUrl, setAudioUrl] = useState<string | null>(null);
+    const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const waveRef = useRef<Wave | null>(null);
+
+    useEffect(() => {
+        const _audioRef = audioRef.current;
+        return () => {
+            if (_audioRef) {
+                _audioRef.pause();
+                _audioRef.src = '';
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (audioUrl && audioRef.current && canvasRef.current) {
+            waveRef.current = new Wave(audioRef.current, canvasRef.current);
+            waveRef.current.addAnimation(new waveRef.current.animations.Lines({
+                lineWidth: 1.5,
+                lineColor: 'rgb(147, 51, 234)',
+                count: 80,
+                mirroredY: true,
+            }));
+        }
+    }, [audioUrl]);
+
+    const handlePlayPause = async () => {
+        if (!audioUrl && !isGeneratingAudio) {
+            setIsGeneratingAudio(true);
+            try {
+                const { audio } = await generateSpeech(result.translatedText);
+                setAudioUrl(audio);
+                setIsGeneratingAudio(false);
+                setTimeout(() => {
+                    if (audioRef.current) {
+                        audioRef.current.play();
+                        setIsPlaying(true);
+                    }
+                }, 100);
+            } catch (error) {
+                console.error("Error generating speech:", error);
+                setIsGeneratingAudio(false);
+            }
+        } else if (audioRef.current) {
+            if (isPlaying) {
+                audioRef.current.pause();
+            } else {
+                audioRef.current.play();
+            }
+            setIsPlaying(!isPlaying);
+        }
+    };
+
+    const handleReset = () => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+            setIsPlaying(false);
+        }
+    };
+
+    if (!result) {
+        return (
+            <Card className="w-full my-4 bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 shadow-sm">
+                <CardContent className="flex items-center justify-center h-24">
+                    <div className="animate-pulse flex items-center">
+                        <div className="h-4 w-4 bg-primary rounded-full mr-2"></div>
+                        <div className="h-4 w-32 bg-primary rounded"></div>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card className="w-full my-4 shadow-none bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
+            <CardContent className="p-4 sm:p-6">
+                <div className="space-y-4 sm:space-y-6">
+                    <div>
+                        <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                            The phrase <span className="font-medium text-neutral-900 dark:text-neutral-100">{toolInvocation.args.text}</span> translates from <span className="font-medium text-neutral-900 dark:text-neutral-100">{result.detectedLanguage}</span> to <span className="font-medium text-neutral-900 dark:text-neutral-100">{toolInvocation.args.to}</span> as <span className="font-medium text-primary">{result.translatedText}</span>
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <Button
+                            onClick={handlePlayPause}
+                            disabled={isGeneratingAudio}
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary/10 hover:bg-primary/20 text-primary flex-shrink-0"
+                        >
+                            {isGeneratingAudio ? (
+                                <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                            ) : isPlaying ? (
+                                <Pause className="h-4 w-4 sm:h-5 sm:w-5" />
+                            ) : (
+                                <PlayIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                            )}
+                        </Button>
+                        <div className="flex-1 h-8 sm:h-10 bg-neutral-100 dark:bg-neutral-900 rounded-md sm:rounded-lg overflow-hidden">
+                            <canvas
+                                ref={canvasRef}
+                                width="800"
+                                height="200"
+                                className="w-full h-full opacity-90 dark:opacity-70"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+            {audioUrl && (
+                <audio
+                    ref={audioRef}
+                    src={audioUrl}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => { setIsPlaying(false); handleReset(); }}
+                />
+            )}
+        </Card>
+    );
+};
+
 const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [selectedIndex, setSelectedIndex] = React.useState(0);
@@ -3184,7 +2884,6 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
         <>
             <div className="mt-2 flex flex-wrap gap-2">
                 {imageAttachments.map((attachment, i) => {
-                    // Truncate filename to 15 characters
                     const fileName = attachment.name || `Image ${i + 1}`;
                     const truncatedName = fileName.length > 15 
                         ? fileName.substring(0, 12) + '...' 
@@ -3231,7 +2930,6 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                 >
                                     <Copy className="h-4 w-4" />
                                 </Button>
-                                
                                 <a 
                                     href={imageAttachments[selectedIndex].url} 
                                     download={imageAttachments[selectedIndex].name}
@@ -3244,15 +2942,12 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                         <path d="M7.50005 1.04999C7.74858 1.04999 7.95005 1.25146 7.95005 1.49999V8.41359L10.1819 6.18179C10.3576 6.00605 10.6425 6.00605 10.8182 6.18179C10.994 6.35753 10.994 6.64245 10.8182 6.81819L7.81825 9.81819C7.64251 9.99392 7.35759 9.99392 7.18185 9.81819L4.18185 6.81819C4.00611 6.64245 4.00611 6.35753 4.18185 6.18179C4.35759 6.00605 4.64251 6.00605 4.81825 6.18179L7.05005 8.41359V1.49999C7.05005 1.25146 7.25152 1.04999 7.50005 1.04999ZM2.5 10C2.77614 10 3 10.2239 3 10.5V12C3 12.5539 3.44565 13 3.99635 13H11.0012C11.5529 13 12 12.5539 12 12V10.5C12 10.2239 12.2239 10 12.5 10C12.7761 10 13 10.2239 13 10.5V12C13 13.1046 12.1059 14 11.0012 14H3.99635C2.89019 14 2 13.1046 2 12V10.5C2 10.2239 2.22386 10 2.5 10Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
                                     </svg>
                                 </a>
-                                
                                 <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 mr-8">
                                     {selectedIndex + 1} of {imageAttachments.length}
                                 </Badge>
                             </div>
-                            
-                            <div className="w-8"></div> {/* Spacer to balance the header and avoid overlap with close button */}
+                            <div className="w-8"></div>
                         </header>
-                        
                         <div className="flex-1 p-4 overflow-auto flex items-center justify-center">
                             <div className="relative max-w-full max-h-[60vh]">
                                 <img
@@ -3260,7 +2955,6 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                     alt={imageAttachments[selectedIndex].name || `Image ${selectedIndex + 1}`}
                                     className="max-w-full max-h-[60vh] object-contain rounded-md"
                                 />
-                                
                                 {imageAttachments.length > 1 && (
                                     <>
                                         <Button
@@ -3283,7 +2977,6 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                 )}
                             </div>
                         </div>
-                        
                         {imageAttachments.length > 1 && (
                             <div className="border-t border-neutral-200 dark:border-neutral-800 p-3">
                                 <div className="flex items-center justify-center gap-2 overflow-x-auto py-1">
@@ -3307,7 +3000,6 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
                                 </div>
                             </div>
                         )}
-                        
                         <footer className="border-t border-neutral-200 dark:border-neutral-800 p-3">
                             <div className="text-sm text-neutral-600 dark:text-neutral-400 flex items-center justify-between">
                                 <span className="truncate max-w-[80%]">

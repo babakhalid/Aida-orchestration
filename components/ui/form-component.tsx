@@ -5,20 +5,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import { Textarea } from '../ui/textarea';
 import useWindowSize from '@/hooks/use-window-size';
-import { TelescopeIcon, X } from 'lucide-react';
+import { Paperclip, X, ChevronDown, Globe, TelescopeIcon } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn, SearchGroup, SearchGroupId, searchGroups } from '@/lib/utils';
 import { TextMorph } from '@/components/core/text-morph';
-import { Upload } from 'lucide-react';
 import { UIMessage } from '@ai-sdk/ui-utils';
-import { Globe } from 'lucide-react';
 import { track } from '@vercel/analytics';
 
 interface ModelSwitcherProps {
@@ -48,158 +51,121 @@ const XAIIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
-
 const models = [
-    { value: "scira-default", label: "Grok 3.0", icon: XAIIcon, iconClass: "!text-neutral-300", description: "xAI's most intelligent model", color: "black", vision: false, experimental: false, category: "Stable" },
-    { value: "scira-grok-3-mini", label: "Grok 3.0 Mini", icon: XAIIcon, iconClass: "!text-neutral-300", description: "xAI's most efficient model", color: "gray", vision: false, experimental: false, category: "Stable" },
-    { value: "scira-vision", label: "Grok 2.0 Vision", icon: XAIIcon, iconClass: "!text-neutral-300", description: "xAI's most advanced vision model", color: "indigo", vision: true, experimental: false, category: "Stable" },
-    { value: "scira-google", label: "Gemini 2.5 Flash (Preview)", icon: "/google.svg", iconClass: "!text-neutral-300", description: "Google's most advanced model", color: "blue", vision: true, experimental: false, category: "Stable" },
-    { value: "scira-4.1-mini", label: "GPT 4.1 Mini", icon: "/openai.svg", iconClass: "!text-neutral-300", description: "OpenAI's smartest mini model", color: "blue", vision: true, experimental: false, category: "Stable" },
-    { value: "scira-o4-mini", label: "o4 mini", icon: "/openai.svg", iconClass: "!text-neutral-300", description: "OpenAI's mini reasoning model", color: "blue", vision: true, experimental: false, category: "Stable" },
-    { value: "scira-qwq", label: "QWQ 32B", icon: "/groq.svg", iconClass: "!text-neutral-300", description: "Alibaba's most advanced model", color: "purple", vision: false, experimental: true, category: "Experimental" },
+    { value: "scira-default", label: "Grok 3.0", icon: XAIIcon, iconClass: "text-gray-400", description: "xAI's most intelligent model", color: "black", vision: false, experimental: false, category: "Stable" },
+    { value: "scira-grok-3-mini", label: "Grok 3.0 Mini", icon: XAIIcon, iconClass: "text-gray-400", description: "xAI's most efficient model", color: "gray", vision: false, experimental: false, category: "Stable" },
+    { value: "scira-vision", label: "Grok 2.0 Vision", icon: XAIIcon, iconClass: "text-gray-400", description: "xAI's most advanced vision model", color: "indigo", vision: true, experimental: false, category: "Stable" },
+    { value: "scira-google", label: "Gemini 2.5 Flash (Preview)", icon: "/google.svg", iconClass: "text-gray-400", description: "Google's most advanced model", color: "blue", vision: true, experimental: false, category: "Stable" },
+    { value: "scira-4.1-mini", label: "GPT 4.1 Mini", icon: "/openai.svg", iconClass: "text-gray-400", description: "OpenAI's smartest mini model", color: "blue", vision: true, experimental: false, category: "Stable" },
+    { value: "scira-o4-mini", label: "o4 mini", icon: "/openai.svg", iconClass: "text-gray-400", description: "OpenAI's mini reasoning model", color: "blue", vision: true, experimental: false, category: "Stable" },
+    { value: "scira-qwq", label: "QWQ 32B", icon: "/groq.svg", iconClass: "text-gray-400", description: "Alibaba's most advanced model", color: "purple", vision: false, experimental: true, category: "Experimental" },
 ];
 
+// Simplified color classes for light and dark modes
 const getColorClasses = (color: string, isSelected: boolean = false) => {
     const baseClasses = "transition-colors duration-200";
-    const selectedClasses = isSelected ? "!bg-opacity-100 dark:!bg-opacity-100" : "";
+    const selectedClasses = isSelected ? "bg-gray-700" : "bg-gray-800/80";
 
     switch (color) {
         case 'black':
-            return isSelected
-                ? `${baseClasses} ${selectedClasses} !bg-[#0F0F0F] dark:!bg-[#0F0F0F] !text-white hover:!bg-[#0F0F0F] dark:hover:!bg-[#0F0F0F] !border-[#0F0F0F] dark:!border-[#0F0F0F]`
-                : `${baseClasses} !text-[#0F0F0F] dark:!text-[#E5E5E5] hover:!bg-[#0F0F0F] hover:!text-white dark:hover:!bg-[#0F0F0F] dark:hover:!text-white`;
         case 'gray':
-            return isSelected
-                ? `${baseClasses} ${selectedClasses} !bg-[#4E4E4E] dark:!bg-[#4E4E4E] !text-white hover:!bg-[#3D3D3D] dark:hover:!bg-[#3D3D3D] !border-[#4E4E4E] dark:!border-[#4E4E4E]`
-                : `${baseClasses} !text-[#4E4E4E] dark:!text-[#E5E5E5] hover:!bg-[#4E4E4E] hover:!text-white dark:hover:!bg-[#4E4E4E] dark:hover:!text-white`;
         case 'indigo':
-            return isSelected
-                ? `${baseClasses} ${selectedClasses} !bg-[#4F46E5] dark:!bg-[#4F46E5] !text-white hover:!bg-[#4338CA] dark:hover:!bg-[#4338CA] !border-[#4F46E5] dark:!border-[#4F46E5]`
-                : `${baseClasses} !text-[#4F46E5] dark:!text-[#6366F1] hover:!bg-[#4F46E5] hover:!text-white dark:hover:!bg-[#4F46E5] dark:hover:!text-white`;
         case 'violet':
-            return isSelected
-                ? `${baseClasses} ${selectedClasses} !bg-[#8B5CF6] dark:!bg-[#8B5CF6] !text-white hover:!bg-[#7C3AED] dark:hover:!bg-[#7C3AED] !border-[#8B5CF6] dark:!border-[#8B5CF6]`
-                : `${baseClasses} !text-[#8B5CF6] dark:!text-[#A78BFA] hover:!bg-[#8B5CF6] hover:!text-white dark:hover:!bg-[#8B5CF6] dark:hover:!text-white`;
         case 'purple':
-            return isSelected
-                ? `${baseClasses} ${selectedClasses} !bg-[#5E5ADB] dark:!bg-[#5E5ADB] !text-white hover:!bg-[#4D49C9] dark:hover:!bg-[#4D49C9] !border-[#5E5ADB] dark:!border-[#5E5ADB]`
-                : `${baseClasses} !text-[#5E5ADB] dark:!text-[#5E5ADB] hover:!bg-[#5E5ADB] hover:!text-white dark:hover:!bg-[#5E5ADB] dark:hover:!text-white`;
-        case 'alpha':
-            // make it classic optimus prime like 
-            return isSelected
-                ? `${baseClasses} ${selectedClasses} !bg-gradient-to-r !from-[#0b3d91] !to-[#d01012] dark:!bg-gradient-to-r dark:!from-[#0b3d91] dark:!to-[#d01012] !text-white hover:!opacity-90 !border-[#0b3d91] dark:!border-[#0b3d91]`
-                : `${baseClasses} !text-[#d01012] dark:!text-[#3f83f8] hover:!bg-gradient-to-r hover:!from-[#0b3d91] hover:!to-[#d01012] hover:!text-white dark:hover:!text-white`;
         case 'blue':
-            return isSelected
-                ? `${baseClasses} ${selectedClasses} !bg-[#2563eb] dark:!bg-[#2563eb] !text-white hover:!bg-[#1d4ed8] dark:hover:!bg-[#1d4ed8] !border-[#2563eb] dark:!border-[#2563eb]`
-                : `${baseClasses} !text-[#2563eb] dark:!text-[#60a5fa] hover:!bg-[#2563eb] hover:!text-white dark:hover:!bg-[#2563eb] dark:hover:!text-white`;
         default:
             return isSelected
-                ? `${baseClasses} ${selectedClasses} !bg-neutral-500 dark:!bg-neutral-700 !text-white hover:!bg-neutral-600 dark:hover:!bg-neutral-800 !border-neutral-500 dark:!border-neutral-700`
-                : `${baseClasses} !text-neutral-600 dark:!text-neutral-300 hover:!bg-neutral-500 hover:!text-white dark:hover:!bg-neutral-700 dark:hover:!text-white`;
+                ? `${baseClasses} ${selectedClasses} text-white hover:bg-gray-600`
+                : `${baseClasses} text-gray-400 hover:bg-gray-700`;
     }
-}
+};
 
 const ModelSwitcher: React.FC<ModelSwitcherProps> = ({ selectedModel, setSelectedModel, className, showExperimentalModels, attachments, messages, status, onModelSelect }) => {
     const selectedModelData = models.find(model => model.value === selectedModel);
     const [isOpen, setIsOpen] = useState(false);
     const isProcessing = status === 'submitted' || status === 'streaming';
 
-    // Check for attachments in current and previous messages
     const hasAttachments = attachments.length > 0 || messages.some(msg =>
         msg.experimental_attachments && msg.experimental_attachments.length > 0
     );
 
-    // Filter models based on attachments first, then experimental status
     const filteredModels = hasAttachments
         ? models.filter(model => model.vision)
         : models.filter(model => showExperimentalModels ? true : !model.experimental);
 
-    // Group filtered models by category
     const groupedModels = filteredModels.reduce((acc, model) => {
         const category = model.category;
-        if (!acc[category]) {
-            acc[category] = [];
-        }
+        if (!acc[category]) acc[category] = [];
         acc[category].push(model);
         return acc;
     }, {} as Record<string, typeof models>);
 
-    // Only show divider if we have multiple categories and no attachments
     const showDivider = (category: string) => {
         return !hasAttachments && showExperimentalModels && category === "Stable";
     };
 
     return (
-        <DropdownMenu
-            onOpenChange={setIsOpen}
-            modal={false}
-            open={isOpen && !isProcessing}
-        >
-            <DropdownMenuTrigger
-                className={cn(
-                    "flex items-center gap-2 p-2 sm:px-3 h-8",
-                    "rounded-full transition-all duration-300",
-                    "border border-neutral-200 dark:border-neutral-800",
-                    "hover:shadow-md",
-                    getColorClasses(selectedModelData?.color || "neutral", true),
-                    isProcessing && "opacity-50 pointer-events-none",
-                    "ring-0 outline-none",
-                    className
-                )}
-                disabled={isProcessing}
-            >
-                {selectedModelData && (
-                    typeof selectedModelData.icon === 'string' ? (
-                        <img
-                            src={selectedModelData.icon}
-                            alt={selectedModelData.label}
-                            className={cn(
-                                "w-3.5 h-3.5 object-contain",
-                                selectedModelData.iconClass
-                            )}
-                        />
-                    ) : (
-                        <selectedModelData.icon
-                            className={cn(
-                                "w-3.5 h-3.5",
-                                selectedModelData.iconClass
-                            )}
-                        />
-                    )
-                )}
-                <span className="hidden sm:block text-xs font-medium overflow-hidden">
-                    <TextMorph
-                        variants={{
-                            initial: { opacity: 0, y: 10 },
-                            animate: { opacity: 1, y: 0 },
-                            exit: { opacity: 0, y: -10 }
-                        }}
-                        transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 30,
-                            mass: 0.5
-                        }}
-                    >
-                        {selectedModelData?.label || ""}
-                    </TextMorph>
-                </span>
+        <DropdownMenu onOpenChange={setIsOpen} modal={false} open={isOpen && !isProcessing}>
+            <DropdownMenuTrigger>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                className={cn(
+                                    "flex items-center gap-1 px-3 py-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors",
+                                    isProcessing && "opacity-50 pointer-events-none",
+                                    className
+                                )}
+                                disabled={isProcessing}
+                            >
+                                {selectedModelData && (
+                                    typeof selectedModelData.icon === 'string' ? (
+                                        <img
+                                            src={selectedModelData.icon}
+                                            alt={selectedModelData.label}
+                                            className={cn("w-4 h-4 object-contain", selectedModelData.iconClass)}
+                                        />
+                                    ) : (
+                                        <selectedModelData.icon className={cn("w-4 h-4", selectedModelData.iconClass)} />
+                                    )
+                                )}
+                                <span className="hidden sm:block text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                                    <TextMorph
+                                        variants={{
+                                            initial: { opacity: 0, y: 10 },
+                                            animate: { opacity: 1, y: 0 },
+                                            exit: { opacity: 0, y: -10 }
+                                        }}
+                                        transition={{
+                                            type: "spring",
+                                            stiffness: 500,
+                                            damping: 30,
+                                            mass: 0.5
+                                        }}
+                                    >
+                                        {selectedModelData?.label || ""}
+                                    </TextMorph>
+                                </span>
+                                <ChevronDown className="h-4 w-4 ml-1" />
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100">
+                            <p className="font-semibold">{selectedModelData?.label || "Model"}</p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400">{selectedModelData?.description || "Select a model"}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                className="w-[200px] p-0.5 !font-sans rounded-lg bg-white dark:bg-neutral-900 !mt-1.5 !z-[52] shadow-lg border border-neutral-200 dark:border-neutral-800 max-h-[290px] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent"
-                align="start"
-                side="bottom"
+                className="w-56 p-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-lg max-h-80 overflow-y-auto text-neutral-900 dark:text-neutral-100"
+                align="end"
+                side="top"
                 sideOffset={8}
                 forceMount
             >
                 {Object.entries(groupedModels).map(([category, categoryModels], categoryIndex) => (
-                    <div key={category} className={cn(
-                        categoryIndex > 0 && "mt-1"
-                    )}>
-                        <div className="px-2 py-1 text-[10px] font-medium text-neutral-500 dark:text-neutral-400 select-none bg-white dark:bg-neutral-900 z-10">
-                            {category}
-                        </div>
+                    <div key={category} className={cn(categoryIndex > 0 && "mt-1")}>
+                        <div className="px-2 py-1 text-xs font-semibold text-neutral-500 dark:text-neutral-400">{category}</div>
                         <div className="space-y-0.5">
                             {categoryModels.map((model) => (
                                 <DropdownMenuItem
@@ -207,49 +173,25 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = ({ selectedModel, setSelecte
                                     onSelect={() => {
                                         console.log("Selected model:", model.value);
                                         setSelectedModel(model.value.trim());
-
-                                        // Call onModelSelect if provided
-                                        if (onModelSelect) {
-                                            // Show additional info about image attachments for vision models
-                                            onModelSelect(model);
-                                        }
+                                        if (onModelSelect) onModelSelect(model);
                                     }}
                                     className={cn(
-                                        "flex items-center gap-1.5 px-1.5 py-1 rounded-md text-xs min-h-[36px]",
-                                        "transition-all duration-200",
-                                        "hover:shadow-sm",
-                                        getColorClasses(model.color, selectedModel === model.value)
+                                        "flex items-center gap-2 px-2 py-1.5 text-sm rounded-sm text-neutral-700 dark:text-neutral-300",
+                                        selectedModel === model.value ? "bg-neutral-100 dark:bg-neutral-800" : "hover:bg-neutral-100 dark:hover:bg-neutral-800"
                                     )}
                                 >
-                                    <div className={cn(
-                                        "p-1 rounded-md",
-                                        selectedModel === model.value
-                                            ? "bg-black/10 dark:bg-white/10"
-                                            : "bg-black/5 dark:bg-white/5",
-                                        "group-hover:bg-black/10 dark:group-hover:bg-white/10"
-                                    )}>
-                                        {typeof model.icon === 'string' ? (
-                                            <img
-                                                src={model.icon}
-                                                alt={model.label}
-                                                className={cn(
-                                                    "w-2.5 h-2.5 object-contain",
-                                                    model.iconClass,
-                                                    model.value === "scira-optimus" && "invert"
-                                                )}
-                                            />
-                                        ) : (
-                                            <model.icon
-                                                className={cn(
-                                                    "w-2.5 h-2.5",
-                                                    model.iconClass
-                                                )}
-                                            />
-                                        )}
-                                    </div>
+                                    {typeof model.icon === 'string' ? (
+                                        <img
+                                            src={model.icon}
+                                            alt={model.label}
+                                            className={cn("w-4 h-4 object-contain", model.iconClass, model.value === "scira-optimus" && "invert")}
+                                        />
+                                    ) : (
+                                        <model.icon className={cn("w-4 h-4", model.iconClass)} />
+                                    )}
                                     <div className="flex flex-col gap-px min-w-0">
-                                        <div className="font-medium truncate text-[12px]">{model.label}</div>
-                                        <div className="text-[9px] opacity-80 truncate leading-tight">{model.description}</div>
+                                        <div className="font-medium truncate">{model.label}</div>
+                                        <div className="text-xs text-neutral-500 dark:text-neutral-400 truncate">{model.description}</div>
                                     </div>
                                 </DropdownMenuItem>
                             ))}
@@ -290,12 +232,13 @@ const ArrowUpIcon = ({ size = 16 }: { size?: number }) => {
     );
 };
 
-const StopIcon = ({ size = 16 }: { size?: number }) => {
+const StopIcon = ({ size = 16, className }: { size?: number, className?: string }) => {
     return (
         <svg
             height={size}
             viewBox="0 0 16 16"
             width={size}
+            className={className}
             style={{ color: "currentcolor" }}
         >
             <path
@@ -328,13 +271,12 @@ const PaperclipIcon = ({ size = 16 }: { size?: number }) => {
     );
 };
 
-
 const MAX_IMAGES = 4;
 const MAX_INPUT_CHARS = 10000;
 
 const hasVisionSupport = (modelValue: string): boolean => {
     const selectedModel = models.find(model => model.value === modelValue);
-    return selectedModel?.vision === true
+    return selectedModel?.vision === true;
 };
 
 const truncateFilename = (filename: string, maxLength: number = 20) => {
@@ -358,25 +300,17 @@ const AttachmentPreview: React.FC<{ attachment: Attachment | UploadingAttachment
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
+            exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.2 }}
             className={cn(
-                "relative flex items-center",
-                "bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm",
-                "border border-neutral-200/80 dark:border-neutral-700/80",
-                "rounded-2xl p-2 pr-8 gap-2.5",
-                "shadow-sm hover:shadow-md",
-                "flex-shrink-0 z-0",
-                "hover:bg-white dark:hover:bg-neutral-800",
-                "transition-all duration-200",
-                "group"
+                "relative flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100"
             )}
         >
             {isUploading ? (
                 <div className="w-8 h-8 flex items-center justify-center">
-                    <svg className="animate-spin h-4 w-4 text-neutral-500 dark:text-neutral-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-5 w-5 text-neutral-500 dark:text-neutral-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -394,7 +328,7 @@ const AttachmentPreview: React.FC<{ attachment: Attachment | UploadingAttachment
                                 fill="transparent"
                             ></circle>
                             <circle
-                                className="text-primary stroke-current"
+                                className="text-blue-500 stroke-current"
                                 strokeWidth="8"
                                 strokeLinecap="round"
                                 cx="50"
@@ -411,7 +345,7 @@ const AttachmentPreview: React.FC<{ attachment: Attachment | UploadingAttachment
                     </div>
                 </div>
             ) : (
-                <div className="w-8 h-8 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-900 flex-shrink-0 ring-1 ring-neutral-200/50 dark:ring-neutral-700/50">
+                <div className="w-8 h-8 rounded-md overflow-hidden bg-neutral-100 dark:bg-neutral-800 flex-shrink-0">
                     <img
                         src={(attachment as Attachment).url}
                         alt={`Preview of ${attachment.name}`}
@@ -421,11 +355,11 @@ const AttachmentPreview: React.FC<{ attachment: Attachment | UploadingAttachment
             )}
             <div className="flex-grow min-w-0">
                 {!isUploadingAttachment(attachment) && (
-                    <p className="text-xs font-medium truncate text-neutral-800 dark:text-neutral-200">
+                    <p className="text-sm font-medium truncate text-neutral-900 dark:text-neutral-100">
                         {truncateFilename(attachment.name)}
                     </p>
                 )}
-                <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     {isUploadingAttachment(attachment)
                         ? 'Uploading...'
                         : formatFileSize((attachment as Attachment).size)}
@@ -436,17 +370,10 @@ const AttachmentPreview: React.FC<{ attachment: Attachment | UploadingAttachment
                 whileTap={{ scale: 0.9 }}
                 onClick={(e) => { e.stopPropagation(); onRemove(); }}
                 className={cn(
-                    "absolute -top-1.5 -right-1.5 p-0.5 m-0 rounded-full",
-                    "bg-white/90 dark:bg-neutral-800/90 backdrop-blur-sm",
-                    "border border-neutral-200/80 dark:border-neutral-700/80",
-                    "shadow-sm hover:shadow-md",
-                    "transition-all duration-200 z-20",
-                    "opacity-0 group-hover:opacity-100",
-                    "scale-75 group-hover:scale-100",
-                    "hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                    "absolute top-1 right-1 p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700"
                 )}
             >
-                <X className="h-3 w-3 text-neutral-500 dark:text-neutral-400" />
+                <X className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
             </motion.button>
         </motion.div>
     );
@@ -463,13 +390,11 @@ interface FormComponentProps {
     attachments: Array<Attachment>;
     setAttachments: React.Dispatch<React.SetStateAction<Array<Attachment>>>;
     handleSubmit: (
-        event?: {
-            preventDefault?: () => void;
-        },
+        event?: { preventDefault?: () => void },
         chatRequestOptions?: ChatRequestOptions,
     ) => void;
     fileInputRef: React.RefObject<HTMLInputElement>;
-    inputRef: React.RefObject<HTMLTextAreaElement>;
+    inputRef: React.RefObject<HTMLInputElement>;
     stop: () => void;
     messages: Array<UIMessage>;
     append: (
@@ -517,34 +442,25 @@ const SwitchNotification: React.FC<SwitchNotificationProps> = ({
     modelColor = 'default',
     notificationType = 'model'
 }) => {
-    // Icon color is always white for better contrast on colored backgrounds
-    const getIconColorClass = () => "text-white";
+    const getIconColorClass = () => "text-neutral-600 dark:text-neutral-300";
 
-    // Get background color for model notifications only
     const getModelBgClass = (color: string) => {
         switch (color) {
             case 'black':
-                return 'bg-[#0F0F0F] dark:bg-[#0F0F0F] border-[#0F0F0F] dark:border-[#0F0F0F]';
             case 'gray':
-                return 'bg-[#4E4E4E] dark:bg-[#4E4E4E] border-[#4E4E4E] dark:border-[#4E4E4E]';
             case 'indigo':
-                return 'bg-[#4F46E5] dark:bg-[#4F46E5] border-[#4F46E5] dark:border-[#4F46E5]';
             case 'violet':
-                return 'bg-[#8B5CF6] dark:bg-[#8B5CF6] border-[#8B5CF6] dark:border-[#8B5CF6]';
             case 'purple':
-                return 'bg-[#5E5ADB] dark:bg-[#5E5ADB] border-[#5E5ADB] dark:border-[#5E5ADB]';
             case 'blue':
-                return 'bg-[#2563eb] dark:bg-[#2563eb] border-[#2563eb] dark:border-[#2563eb]';
             default:
-                return 'bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700';
+                return 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800';
         }
     };
 
-    // For model notifications, use model colors. For group notifications, use default background.
     const useModelColor = notificationType === 'model' && modelColor !== 'default';
     const bgColorClass = useModelColor
         ? getModelBgClass(modelColor)
-        : "bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700";
+        : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800";
 
     return (
         <AnimatePresence>
@@ -557,35 +473,23 @@ const SwitchNotification: React.FC<SwitchNotificationProps> = ({
                         opacity: { duration: 0.2 },
                         height: { duration: 0.2 }
                     }}
-                    className={cn(
-                        "w-[98%] max-w-2xl overflow-hidden mx-auto",
-                        "text-sm text-neutral-700 dark:text-neutral-300 -mb-1.5"
-                    )}
+                    className={cn("w-full max-w-3xl mx-auto text-sm text-neutral-700 dark:text-neutral-300 mb-2")}
                 >
                     <div className={cn(
-                        "flex items-center gap-2 py-2 px-3 sm:py-2.5 sm:px-3.5 rounded-t-lg border shadow-sm backdrop-blur-sm",
+                        "flex items-center gap-2 py-2 px-4 rounded-lg border shadow-sm",
                         bgColorClass,
-                        useModelColor ? "text-white" : "text-neutral-900 dark:text-neutral-100"
+                        useModelColor ? "text-neutral-900 dark:text-neutral-100" : "text-neutral-900 dark:text-neutral-100"
                     )}>
                         {icon && (
-                            <span className={cn(
-                                "flex-shrink-0 size-3.5 sm:size-4",
-                                useModelColor ? getIconColorClass() : "text-primary",
-                            )}>
+                            <span className={cn("flex-shrink-0 w-4 h-4", useModelColor ? getIconColorClass() : "text-blue-500")}>
                                 {icon}
                             </span>
                         )}
-                        <div className="flex flex-col items-start sm:flex-row sm:items-center sm:flex-wrap gap-x-1.5 gap-y-0.5">
-                            <span className={cn(
-                                "font-semibold text-xs sm:text-sm",
-                                useModelColor ? "text-white" : "text-neutral-900 dark:text-neutral-100"
-                            )}>
+                        <div className="flex flex-col gap-1">
+                            <span className={cn("font-semibold text-sm", useModelColor ? "text-neutral-900 dark:text-neutral-100" : "text-neutral-900 dark:text-neutral-100")}>
                                 {title}
                             </span>
-                            <span className={cn(
-                                "text-[10px] sm:text-xs leading-tight",
-                                useModelColor ? "text-white/80" : "text-neutral-600 dark:text-neutral-400"
-                            )}>
+                            <span className={cn("text-xs", useModelColor ? "text-neutral-500 dark:text-neutral-400" : "text-neutral-500 dark:text-neutral-400")}>
                                 {description}
                             </span>
                         </div>
@@ -602,13 +506,10 @@ const ToolbarButton = ({ group, isSelected, onClick }: ToolbarButtonProps) => {
     const isMobile = width ? width < 768 : false;
 
     const commonClassNames = cn(
-        "relative flex items-center justify-center",
-        "size-8",
-        "rounded-full",
-        "transition-colors duration-300",
+        "relative flex items-center justify-center w-8 h-8 rounded-full transition-colors duration-300",
         isSelected
-            ? "bg-neutral-500 dark:bg-neutral-600 text-white dark:text-neutral-300"
-            : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/80"
+            ? "bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+            : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700"
     );
 
     const handleClick = (e: React.MouseEvent) => {
@@ -617,28 +518,35 @@ const ToolbarButton = ({ group, isSelected, onClick }: ToolbarButtonProps) => {
         onClick();
     };
 
-    // Use regular button for mobile
-    if (isMobile) {
-        return (
-            <button
-                onClick={handleClick}
-                className={commonClassNames}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-            >
-                <Icon className="size-4" />
-            </button>
-        );
-    }
-
     return (
-        <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleClick}
-            className={commonClassNames}
-        >
-            <Icon className="size-4" />
-        </motion.button>
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    {isMobile ? (
+                        <button
+                            onClick={handleClick}
+                            className={commonClassNames}
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
+                        >
+                            <Icon className="w-4 h-4" />
+                        </button>
+                    ) : (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleClick}
+                            className={commonClassNames}
+                        >
+                            <Icon className="w-4 h-4" />
+                        </motion.button>
+                    )}
+                </TooltipTrigger>
+                <TooltipContent className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100">
+                    <p className="font-semibold">{group.name}</p>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">{group.description}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     );
 };
 
@@ -655,10 +563,8 @@ const SelectionContent = ({ selectedGroup, onGroupSelect, status, onExpandChange
     const { width } = useWindowSize();
     const isMobile = width ? width < 768 : false;
 
-    // Notify parent component when expansion state changes
     useEffect(() => {
         if (onExpandChange) {
-            // Only notify about expansion on mobile devices
             onExpandChange(isMobile ? isExpanded : false);
         }
     }, [isExpanded, onExpandChange, isMobile]);
@@ -677,10 +583,7 @@ const SelectionContent = ({ selectedGroup, onGroupSelect, status, onExpandChange
                 ease: "easeInOut",
             }}
             className={cn(
-                "inline-flex items-center min-w-[38px] p-0.5",
-                "rounded-full border border-neutral-200 dark:border-neutral-800",
-                "bg-white dark:bg-neutral-900 shadow-sm overflow-visible",
-                "relative z-10",
+                "inline-flex items-center min-w-[38px] p-0.5 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm",
                 isProcessing && "opacity-50 pointer-events-none"
             )}
             onMouseEnter={() => !isProcessing && setIsExpanded(true)}
@@ -703,10 +606,7 @@ const SelectionContent = ({ selectedGroup, onGroupSelect, status, onExpandChange
                                 duration: 0.15,
                                 ease: "easeInOut"
                             }}
-                            className={cn(
-                                "!m-0",
-                                isLastItem && isExpanded && showItem ? "pr-0.5" : ""
-                            )}
+                            className={cn(isLastItem && isExpanded && showItem ? "pr-0.5" : "")}
                         >
                             <ToolbarButton
                                 group={group}
@@ -754,7 +654,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
 }) => {
     const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
     const isMounted = useRef(true);
-    const isCompositionActive = useRef(false)
+    const isCompositionActive = useRef(false);
     const { width } = useWindowSize();
     const postSubmitFileInputRef = useRef<HTMLInputElement>(null);
     const [isFocused, setIsFocused] = useState(true);
@@ -777,7 +677,6 @@ const FormComponent: React.FC<FormComponentProps> = ({
     });
 
     const showSwitchNotification = (title: string, description: string, icon?: React.ReactNode, color?: string, type: 'model' | 'group' = 'model') => {
-        // Clear any existing timeout to prevent conflicts
         if (switchNotification.visibilityTimeout) {
             clearTimeout(switchNotification.visibilityTimeout);
         }
@@ -791,16 +690,13 @@ const FormComponent: React.FC<FormComponentProps> = ({
             visibilityTimeout: undefined
         });
 
-        // Auto hide after 3 seconds
         const timeout = setTimeout(() => {
             setSwitchNotification(prev => ({ ...prev, show: false }));
         }, 3000);
 
-        // Update the timeout reference
         setSwitchNotification(prev => ({ ...prev, visibilityTimeout: timeout }));
     };
 
-    // Cleanup on unmount
     useEffect(() => {
         return () => {
             if (switchNotification.visibilityTimeout) {
@@ -809,11 +705,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
         };
     }, [switchNotification.visibilityTimeout]);
 
-    const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.preventDefault();
         const newValue = event.target.value;
 
-        // Check if input exceeds character limit
         if (newValue.length > MAX_INPUT_CHARS) {
             setInput(newValue);
             toast.error(`Your input exceeds the maximum of ${MAX_INPUT_CHARS} characters.`);
@@ -837,9 +732,9 @@ const FormComponent: React.FC<FormComponentProps> = ({
         showSwitchNotification(
             group.name,
             group.description,
-            <group.icon className="size-4" />,
-            group.id, // Use the group ID directly as the color code
-            'group'   // Specify this is a group notification
+            <group.icon className="w-4 h-4" />,
+            group.id,
+            'group'
         );
     }, [setSelectedGroup, inputRef]);
 
@@ -937,7 +832,6 @@ const FormComponent: React.FC<FormComponentProps> = ({
             return;
         }
 
-        // Switch to vision model if current model doesn't support vision
         const currentModel = models.find(m => m.value === selectedModel);
         if (!currentModel?.vision) {
             const visionModel = getFirstVisionModel();
@@ -949,10 +843,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
                     modelData.label,
                     'Vision model enabled - you can now attach images',
                     typeof modelData.icon === 'string' ?
-                        <img src={modelData.icon} alt={modelData.label} className="size-4 object-contain" /> :
-                        <modelData.icon className="size-4" />,
+                        <img src={modelData.icon} alt={modelData.label} className="w-4 h-4 object-contain" /> :
+                        <modelData.icon className="w-4 h-4" />,
                     modelData.color,
-                    'model'  // Explicitly mark as model notification
+                    'model'
                 );
             }
         }
@@ -980,7 +874,6 @@ const FormComponent: React.FC<FormComponentProps> = ({
 
         if (imageItems.length === 0) return;
 
-        // Prevent default paste behavior if there are images
         e.preventDefault();
 
         const totalAttachments = attachments.length + imageItems.length;
@@ -989,7 +882,6 @@ const FormComponent: React.FC<FormComponentProps> = ({
             return;
         }
 
-        // Switch to vision model if needed
         const currentModel = models.find(m => m.value === selectedModel);
         if (!currentModel?.vision) {
             const visionModel = getFirstVisionModel();
@@ -1001,10 +893,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
                     modelData.label,
                     'Vision model enabled - you can now attach images',
                     typeof modelData.icon === 'string' ?
-                        <img src={modelData.icon} alt={modelData.label} className="size-4 object-contain" /> :
-                        <modelData.icon className="size-4" />,
+                        <img src={modelData.icon} alt={modelData.label} className="w-4 h-4 object-contain" /> :
+                        <modelData.icon className="w-4 h-4" />,
                     modelData.color,
-                    'model'  // Explicitly mark as model notification
+                    'model'
                 );
             }
         }
@@ -1042,7 +934,6 @@ const FormComponent: React.FC<FormComponentProps> = ({
 
             return () => clearTimeout(focusTimeout);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [status]);
 
     const onSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
@@ -1054,22 +945,17 @@ const FormComponent: React.FC<FormComponentProps> = ({
             return;
         }
 
-        // Check if input exceeds character limit
         if (input.length > MAX_INPUT_CHARS) {
             toast.error(`Your input exceeds the maximum of ${MAX_INPUT_CHARS} characters. Please shorten your message.`);
             return;
         }
 
         if (input.trim() || attachments.length > 0) {
-            track('model_selected', {
-                model: selectedModel,
-            });
+            track('model_selected', { model: selectedModel });
             setHasSubmitted(true);
             lastSubmittedQueryRef.current = input.trim();
 
-            handleSubmit(event, {
-                experimental_attachments: attachments,
-            });
+            handleSubmit(event, { experimental_attachments: attachments });
 
             setAttachments([]);
             if (fileInputRef.current) {
@@ -1102,7 +988,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
         }
     }, [attachments.length, status, fileInputRef]);
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Enter" && !event.shiftKey && !isCompositionActive.current) {
             event.preventDefault();
             if (status === 'submitted' || status === 'streaming') {
@@ -1123,127 +1009,67 @@ const FormComponent: React.FC<FormComponentProps> = ({
     const isMobile = width ? width < 768 : false;
 
     return (
-        <div className="flex flex-col w-full">
-            <div
-                className={cn(
-                    "relative w-full flex flex-col gap-1 rounded-lg transition-all duration-300 !font-sans",
-                    hasInteracted ? "z-[51]" : "",
-                    isDragging && "ring-1 ring-neutral-300 dark:ring-neutral-700",
-                    attachments.length > 0 || uploadQueue.length > 0
-                        ? "bg-gray-100/70 dark:bg-neutral-800 p-1"
-                        : "bg-transparent"
-                )}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-            >
-                <AnimatePresence>
-                    {isDragging && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 backdrop-blur-[2px] bg-background/80 dark:bg-neutral-900/80 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700 flex items-center justify-center z-50 m-2"
-                        >
-                            <div className="flex items-center gap-4 px-6 py-8">
-                                <div className="p-3 rounded-full bg-neutral-100 dark:bg-neutral-800 shadow-sm">
-                                    <Upload className="h-6 w-6 text-neutral-600 dark:text-neutral-400" />
-                                </div>
-                                <div className="space-y-1 text-center">
-                                    <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                                        Drop images here
-                                    </p>
-                                    <p className="text-xs text-neutral-500 dark:text-neutral-500">
-                                        Max {MAX_IMAGES} images
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                <input type="file" className="hidden" ref={fileInputRef} multiple onChange={handleFileChange} accept="image/*" tabIndex={-1} />
-                <input type="file" className="hidden" ref={postSubmitFileInputRef} multiple onChange={handleFileChange} accept="image/*" tabIndex={-1} />
-
-                {(attachments.length > 0 || uploadQueue.length > 0) && (
-                    <div className="flex flex-row gap-2 overflow-x-auto py-2 max-h-28 z-10 px-1 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
-                        {attachments.map((attachment, index) => (
-                            <AttachmentPreview
-                                key={attachment.url}
-                                attachment={attachment}
-                                onRemove={() => removeAttachment(index)}
-                                isUploading={false}
-                            />
-                        ))}
-                        {uploadQueue.map((filename) => (
-                            <AttachmentPreview
-                                key={filename}
-                                attachment={{
-                                    url: "",
-                                    name: filename,
-                                    contentType: "",
-                                    size: 0,
-                                } as Attachment}
-                                onRemove={() => { }}
-                                isUploading={true}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {/* Form container with switch notification */}
-                <div className="relative">
-                    <SwitchNotification
-                        icon={switchNotification.icon}
-                        title={switchNotification.title}
-                        description={switchNotification.description}
-                        isVisible={switchNotification.show}
-                        modelColor={switchNotification.notificationType === 'model' ?
-                            models.find(m => m.value === selectedModel)?.color :
-                            selectedGroup}
-                        notificationType={switchNotification.notificationType}
-                    />
-
-                    <div className="relative rounded-lg bg-neutral-100 dark:bg-neutral-900">
-                        <Textarea
+        <motion.div
+            className={cn(
+                "w-full max-w-3xl mx-auto"
+            )}
+            layout="position"
+            layoutId="chat-input-container"
+        >
+            {(attachments.length > 0 || uploadQueue.length > 0) && (
+                <div className="flex flex-row gap-2 overflow-x-auto py-2 max-h-28 mb-4">
+                    {attachments.map((attachment, index) => (
+                        <AttachmentPreview
+                            key={attachment.url}
+                            attachment={attachment}
+                            onRemove={() => removeAttachment(index)}
+                            isUploading={false}
+                        />
+                    ))}
+                    {uploadQueue.map((filename) => (
+                        <AttachmentPreview
+                            key={filename}
+                            attachment={{ url: "", name: filename, contentType: "", size: 0 } as Attachment}
+                            onRemove={() => {}}
+                            isUploading={true}
+                        />
+                    ))}
+                </div>
+            )}
+            <div className="relative">
+                <SwitchNotification
+                    icon={switchNotification.icon}
+                    title={switchNotification.title}
+                    description={switchNotification.description}
+                    isVisible={switchNotification.show}
+                    modelColor={switchNotification.notificationType === 'model' ?
+                        models.find(m => m.value === selectedModel)?.color :
+                        selectedGroup}
+                    notificationType={switchNotification.notificationType}
+                />
+                <div className="relative mb-4">
+                    <div className="w-full bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
+                        <input
                             ref={inputRef}
-                            placeholder={hasInteracted ? "Ask a new question..." : "Ask a question..."}
+                            type="text"
+                            placeholder={hasInteracted ? "Ask a new question..." : "What do you want to know?"}
                             value={input}
                             onChange={handleInput}
                             disabled={isProcessing}
                             onFocus={handleFocus}
                             onBlur={handleBlur}
                             className={cn(
-                                "w-full rounded-lg resize-none",
-                                "text-base leading-relaxed",
-                                "bg-neutral-100 dark:bg-neutral-900",
-                                "border !border-neutral-200 dark:!border-neutral-700",
-                                "focus:!border-neutral-300 dark:!focus:!border-neutral-500",
-                                isFocused ? "!border-neutral-300 dark:!border-neutral-500" : "",
-                                "text-neutral-900 dark:text-neutral-100",
-                                "focus:!ring-0",
-                                "px-4 py-4 pb-16",
-                                "touch-manipulation",
-                                "whatsize"
+                                "w-full bg-transparent px-4 pt-4 pb-16 h-24 text-base text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400 focus:outline-none font-light"
                             )}
-                            style={{
-                                WebkitUserSelect: 'text',
-                                WebkitTouchCallout: 'none',
-                            }}
-                            rows={1}
-                            autoFocus={width ? width > 768 : true}
-                            onCompositionStart={() => isCompositionActive.current = true}
-                            onCompositionEnd={() => isCompositionActive.current = false}
                             onKeyDown={handleKeyDown}
                             onPaste={handlePaste}
                         />
-
-                        {/* Separate div for toolbar controls that won't trigger the textarea */}
+                        {/* Separate div for toolbar controls that won't trigger the input */}
                         <div
                             className={cn(
                                 "absolute bottom-0 inset-x-0 flex justify-between items-center p-2 rounded-b-lg",
-                                "bg-neutral-100 dark:bg-neutral-900",
-                                "!border !border-t-0 !border-neutral-200 dark:!border-neutral-700",
+                                "bg-white dark:bg-neutral-900",
+                                "!border !border-t-0 !border-neutral-200 dark:!border-neutral-800",
                                 isFocused ? "!border-neutral-300 dark:!border-neutral-500" : "",
                                 isProcessing ? "!opacity-20 !cursor-not-allowed" : ""
                             )}
@@ -1254,11 +1080,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                     "flex items-center gap-2",
                                     isMobile && "overflow-hidden"
                                 )}
-                                // Use pointer-events-auto to enable interactions without affecting the textarea
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    // Blur the textarea on toolbar click to hide keyboard
+                                    // Blur the input on toolbar click to hide keyboard
                                     if (isMobile && document.activeElement === inputRef.current) {
                                         inputRef.current?.blur();
                                     }
@@ -1292,7 +1117,6 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                         messages={messages}
                                         status={status}
                                         onModelSelect={(model) => {
-                                            // Show additional info about image attachments for vision models
                                             const isVisionModel = model.vision === true;
                                             showSwitchNotification(
                                                 model.label,
@@ -1300,10 +1124,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                     ? 'Vision model enabled - you can now attach images'
                                                     : model.description,
                                                 typeof model.icon === 'string' ?
-                                                    <img src={model.icon} alt={model.label} className="size-4 object-contain" /> :
-                                                    <model.icon className="size-4" />,
+                                                    <img src={model.icon} alt={model.label} className="w-4 h-4 object-contain" /> :
+                                                    <model.icon className="w-4 h-4" />,
                                                 model.color,
-                                                'model'  // Explicitly mark as model notification
+                                                'model'
                                             );
                                         }}
                                     />
@@ -1315,41 +1139,49 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                         ? "opacity-0 invisible w-0"
                                         : "opacity-100 visible w-auto"
                                 )}>
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            const newMode = selectedGroup === 'extreme' ? 'web' : 'extreme';
-                                            setSelectedGroup(newMode);
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const newMode = selectedGroup === 'extreme' ? 'web' : 'extreme';
+                                                        setSelectedGroup(newMode);
 
-                                            // Enhanced notification messages
-                                            const newModeText = selectedGroup === 'extreme' ? 'Switched to Web Search' : 'Switched to Extreme Mode';
-                                            const description = selectedGroup === 'extreme'
-                                                ? 'Standard web search mode is now active'
-                                                : 'Enhanced deep research mode is now active';
+                                                        const newModeText = selectedGroup === 'extreme' ? 'Switched to Web Search' : 'Switched to Extreme Mode';
+                                                        const description = selectedGroup === 'extreme'
+                                                            ? 'Standard web search mode is now active'
+                                                            : 'Enhanced deep research mode is now active';
 
-                                            // Use appropriate colors for groups that don't conflict with model colors
-                                            showSwitchNotification(
-                                                newModeText,
-                                                description,
-                                                selectedGroup === 'extreme' ? <Globe className="size-4" /> : <TelescopeIcon className="size-4" />,
-                                                newMode, // Use the new mode as the color identifier
-                                                'group'  // Specify this is a group notification
-                                            );
-                                        }}
-                                        className={cn(
-                                            "flex items-center gap-2 p-2 sm:px-3 h-8",
-                                            "rounded-full transition-all duration-300",
-                                            "border border-neutral-200 dark:border-neutral-800",
-                                            "hover:shadow-md",
-                                            selectedGroup === 'extreme'
-                                                ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
-                                                : "bg-white dark:bg-neutral-900 text-neutral-500",
-                                        )}
-                                    >
-                                        <TelescopeIcon className="h-3.5 w-3.5" />
-                                        <span className="hidden sm:block text-xs font-medium">Extreme</span>
-                                    </button>
+                                                        showSwitchNotification(
+                                                            newModeText,
+                                                            description,
+                                                            selectedGroup === 'extreme' ? <Globe className="w-4 h-4" /> : <TelescopeIcon className="w-4 h-4" />,
+                                                            newMode,
+                                                            'group'
+                                                        );
+                                                    }}
+                                                    className={cn(
+                                                        "flex items-center gap-2 p-2 sm:px-3 h-8",
+                                                        "rounded-full transition-all duration-300",
+                                                        "border border-neutral-200 dark:border-neutral-800",
+                                                        "hover:shadow-md",
+                                                        selectedGroup === 'extreme'
+                                                            ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900"
+                                                            : "bg-white dark:bg-neutral-900 text-neutral-500",
+                                                    )}
+                                                >
+                                                    <TelescopeIcon className="h-3.5 w-3.5" />
+                                                    <span className="hidden sm:block text-xs font-medium">Extreme</span>
+                                                </button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100">
+                                                <p className="font-semibold">Extreme Mode</p>
+                                                <p className="text-xs text-neutral-500 dark:text-neutral-400">Deep research with multiple sources and analysis</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
                             </div>
 
@@ -1358,58 +1190,90 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    // Blur the textarea on button container click
+                                    // Blur the input on button container click
                                     if (isMobile && document.activeElement === inputRef.current) {
                                         inputRef.current?.blur();
                                     }
                                 }}
                             >
                                 {hasVisionSupport(selectedModel) && !(isMobile && isGroupSelectorExpanded) && (
-                                    <Button
-                                        className="rounded-full p-1.5 h-8 w-8 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600"
-                                        onClick={(event) => {
-                                            event.preventDefault();
-                                            event.stopPropagation();
-                                            triggerFileInput();
-                                        }}
-                                        variant="outline"
-                                        disabled={isProcessing}
-                                    >
-                                        <PaperclipIcon size={14} />
-                                    </Button>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    className="rounded-full p-1.5 h-8 w-8 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600"
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                        triggerFileInput();
+                                                    }}
+                                                    variant="outline"
+                                                    disabled={isProcessing}
+                                                >
+                                                    <PaperclipIcon size={14} />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100">
+                                                <p className="font-semibold">Attach Image</p>
+                                                <p className="text-xs text-neutral-500 dark:text-neutral-400">Upload an image to analyze</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 )}
 
                                 {isProcessing ? (
-                                    <Button
-                                        className="rounded-full p-1.5 h-8 w-8"
-                                        onClick={(event) => {
-                                            event.preventDefault();
-                                            event.stopPropagation();
-                                            stop();
-                                        }}
-                                        variant="destructive"
-                                    >
-                                        <StopIcon size={14} />
-                                    </Button>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    className="rounded-full p-1.5 h-8 w-8"
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                        stop();
+                                                    }}
+                                                    variant="destructive"
+                                                >
+                                                    <StopIcon size={14} />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100">
+                                                <p className="font-semibold">Stop</p>
+                                                <p className="text-xs text-neutral-500 dark:text-neutral-400">Stop the current operation</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 ) : (
-                                    <Button
-                                        className="rounded-full p-1.5 h-8 w-8"
-                                        onClick={(event) => {
-                                            event.preventDefault();
-                                            event.stopPropagation();
-                                            submitForm();
-                                        }}
-                                        disabled={input.length === 0 && attachments.length === 0 || uploadQueue.length > 0 || status !== 'ready'}
-                                    >
-                                        <ArrowUpIcon size={14} />
-                                    </Button>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    className="rounded-full p-1.5 h-8 w-8"
+                                                    onClick={(event) => {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                        submitForm();
+                                                    }}
+                                                    disabled={input.length === 0 && attachments.length === 0 || uploadQueue.length > 0 || status !== 'ready'}
+                                                >
+                                                    <ArrowUpIcon size={14} />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100">
+                                                <p className="font-semibold">Send</p>
+                                                <p className="text-xs text-neutral-500 dark:text-neutral-400">Send your message</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+            <input type="file" className="hidden" ref={fileInputRef} multiple onChange={handleFileChange} accept="image/*" tabIndex={-1} />
+            <input type="file" className="hidden" ref={postSubmitFileInputRef} multiple onChange={handleFileChange} accept="image/*" tabIndex={-1} />
+        </motion.div>
     );
 };
 

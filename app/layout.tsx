@@ -1,89 +1,88 @@
-import { Analytics } from "@vercel/analytics/react";
-import { GeistSans } from 'geist/font/sans';
-import 'katex/dist/katex.min.css';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Metadata, Viewport } from "next";
-import { Syne } from 'next/font/google';
+import type { Metadata } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
+import "./globals.css"
+import { Toaster } from "@/components/ui/sonner"
+import { ChatsProvider } from "@/lib/chat-store/chats/provider"
+import { APP_DESCRIPTION, APP_NAME } from "@/lib/config"
+import { ThemeProvider } from "next-themes"
+import Script from "next/script"
+import { createClient } from "../lib/supabase/server"
+import { LayoutClient } from "./layout-client"
+import { ChatSessionProvider } from "@/providers/chat-session-provider"
+import { UserProvider } from "@/providers/user-provider"
+import { UserProfile } from "./types/user"
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
-import { Toaster } from "sonner";
-import "./globals.css";
-import { Providers } from './providers';
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+})
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+})
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://scira.ai"),
-  title: "Scira AI",
-  description: "Scira AI is a minimalistic AI-powered search engine that helps you find information on the internet.",
-  openGraph: {
-    url: "https://scira.ai",
-    siteName: "Scira AI",
-  },
-  keywords: [
-    "scira.ai",
-    "scira ai",
-    "Scira AI",
-    "scira AI",
-    "SCIRA.AI",
-    "scira github",
-    "ai search engine",
-    "Scira",
-    "scira",
-    "scira.app",
-    "scira ai",
-    "scira ai app",
-    "scira",
-    "MiniPerplx",
-    "Scira AI",
-    "open source ai search engine",
-    "minimalistic ai search engine",
-    "ai search engine",
-    "Scira (Formerly MiniPerplx)",
-    "AI Search Engine",
-    "mplx.run",
-    "mplx ai",
-    "zaid mukaddam",
-    "scira.how",
-    "search engine",
-    "AI",
-    "perplexity",
-  ]
-};
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0A0A0A' }
-  ],
+  title: APP_NAME,
+  description: APP_DESCRIPTION,
 }
 
-const syne = Syne({ 
-  subsets: ['latin'], 
-  variable: '--font-syne',
-   preload: true,
-  display: 'swap',
-});
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
+  const isDev = process.env.NODE_ENV === "development"
+  const supabase = await createClient()
+  const { data } = await supabase.auth.getUser()
+
+  let userProfile = null
+  if (data.user) {
+    const { data: userProfileData } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", data.user?.id)
+      .single()
+
+    userProfile = {
+      ...userProfileData,
+      profile_image: data.user?.user_metadata.avatar_url,
+      display_name: data.user?.user_metadata.name,
+    } as UserProfile
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${GeistSans.variable} ${syne.variable} font-sans antialiased`} suppressHydrationWarning>
+      {!isDev ? (
+        <Script
+          async
+          src="https://analytics.umami.is/script.js"
+          data-website-id="42e5b68c-5478-41a6-bc68-088d029cee52"
+        />
+      ) : null}
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <LayoutClient />
         <NuqsAdapter>
-          <Providers>
-            <Toaster position="top-center" />
-            {children}
-          </Providers>
+        <UserProvider initialUser={userProfile}>
+          <ChatsProvider userId={userProfile?.id}>
+            <ChatSessionProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <Toaster position="top-center" />
+                {children}
+              </ThemeProvider>
+            </ChatSessionProvider>
+          </ChatsProvider>
+        </UserProvider>
         </NuqsAdapter>
-        <Analytics />
-        <script async src="https://cdn.seline.com/seline.js" data-token={process.env.SELINE_TOKEN}></script>
       </body>
     </html>
-  );
+  )
 }

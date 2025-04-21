@@ -85,6 +85,9 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+       'bounce-dot1': 'bounce 1s infinite',
+        'bounce-dot2': 'bounce 1s infinite 0.2s',
+        'bounce-dot3': 'bounce 1s infinite 0.4s',
       },
     },
   },
