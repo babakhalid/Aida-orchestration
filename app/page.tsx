@@ -1345,7 +1345,7 @@ const HomeContent = () => {
                                     <div className="w-2 h-2 bg-neutral-900 dark:bg-neutral-100 rounded-full animate-bounce-dot3"></div>
                                 </div>
                                 <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                                    AIDA
+                                    AIDA 
                                 </h2>
                             </div>
                             </div>
