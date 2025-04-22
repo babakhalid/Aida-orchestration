@@ -1,137 +1,158 @@
 // app/providers/user-provider.tsx
-"use client"
+"use client";
 
-import { createClient } from "@/lib/supabase/client"
-import { createContext, useContext, useEffect, useState } from "react"
-import { UserProfile } from "@/app/types/user"
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback,
+  useEffect,
+} from "react";
+import { UserProfile } from "@/app/types/user"; // Verify this path matches your project structure
+import { toast } from "@/components/ui/toast"; // Assuming you want toast notifications here too
 
-type UserContextType = {
-  user: UserProfile | null
-  isLoading: boolean
-  updateUser: (updates: Partial<UserProfile>) => Promise<void>
-  refreshUser: () => Promise<void>
-  signOut: () => Promise<void>
+// Define the shape of the user context
+interface UserContextType {
+  user: UserProfile | null;
+  updateUser: (data: Partial<UserProfile>) => Promise<void>; // Function to update user data
+  signOut: () => Promise<void>; // Function to sign the user out
+  // Optional: if you need to force refresh user data from server
+  // refreshUser: () => Promise<void>;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined)
+// Create the context with a default value that throws an error if used outside the provider
+const UserContext = createContext<UserContextType | null>(null);
 
+// Define the provider component
 export function UserProvider({
+  initialUser, // This likely comes from a server component parent
   children,
-  initialUser,
 }: {
-  children: React.ReactNode
-  initialUser: UserProfile | null
+  initialUser: UserProfile | null;
+  children: ReactNode;
 }) {
-  const [user, setUser] = useState<UserProfile | null>(initialUser)
-  const [isLoading, setIsLoading] = useState(false)
-  const supabase = createClient()
+  // Use useState to manage the user state within the provider
+  const [user, setUser] = useState<UserProfile | null>(initialUser);
 
-  // Refresh user data from the server
-  const refreshUser = async () => {
-    if (!user?.id) return
-
-    setIsLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single()
-
-      if (error) throw error
-      if (data)
-        setUser({
-          ...data,
-          profile_image: data.profile_image || "",
-          display_name: data.display_name || "",
-        })
-    } catch (err) {
-      console.error("Failed to refresh user data:", err)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Update user data both in DB and local state
-  const updateUser = async (updates: Partial<UserProfile>) => {
-    if (!user?.id) return
-
-    setIsLoading(true)
-    try {
-      const { error } = await supabase
-        .from("users")
-        .update(updates)
-        .eq("id", user.id)
-
-      if (error) throw error
-
-      // Update local state optimistically
-      setUser((prev) => (prev ? { ...prev, ...updates } : null))
-    } catch (err) {
-      console.error("Failed to update user:", err)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Sign out and reset user state
-  const signOut = async () => {
-    setIsLoading(true)
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-
-      // Reset user state
-      setUser(null)
-    } catch (err) {
-      console.error("Failed to sign out:", err)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  // Set up realtime subscription for user data changes
+  // Update user state when initialUser prop changes (e.g., on navigation)
   useEffect(() => {
-    if (!user?.id) return
+    setUser(initialUser);
+  }, [initialUser]);
 
-    const channel = supabase
-      .channel(`public:users:id=eq.${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "users",
-          filter: `id=eq.${user.id}`,
-        },
-        (payload) => {
-          setUser((previous) => ({
-            ...previous,
-            ...(payload.new as UserProfile),
-          }))
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
+  // --- Implement updateUser ---
+  const updateUser = useCallback(async (data: Partial<UserProfile>) => {
+    if (!user) {
+      console.error("Cannot update user: No user logged in.");
+      // Optionally throw an error or show a toast
+      toast({ title: "Update failed: Not logged in", status: "error" });
+      return;
     }
-  }, [user?.id, supabase])
+
+    console.log("Attempting to update user with:", data);
+
+    try {
+      // ******** TODO: Implement your API call here ********
+      // Example using fetch:
+      const response = await fetch("/api/user/update", { // ADJUST YOUR API ENDPOINT
+        method: "PATCH", // or PUT/POST depending on your API design
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({})); // Try to get error details
+        console.error("API Error updating user:", response.status, errorData);
+        throw new Error(
+          errorData.message || `Failed to update user (${response.status})`
+        );
+      }
+
+      // Assuming the API returns the updated user profile or confirms success
+      const updatedUserData = await response.json(); // Or handle success confirmation
+
+      // Update local state optimistically or with returned data
+      setUser((currentUser) =>
+        currentUser
+          ? { ...currentUser, ...data } // Simple optimistic update
+          // Or if API returns full updated user:
+          // { ...currentUser, ...updatedUserData }
+          : null
+      );
+
+      console.log("User updated successfully.");
+      toast({ title: "Settings updated", status: "success" });
+      // Optionally, you could return the updated user if needed elsewhere
+      // return updatedUserData;
+
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        status: "error",
+      });
+      // Re-throw or handle as needed
+      // throw error;
+    }
+  }, [user]); // Dependency: 'user' ensures we have the current user context for the API call logic
+
+
+  // --- Implement signOut ---
+  const signOut = useCallback(async () => {
+    console.log("Attempting to sign out...");
+    try {
+      // ******** TODO: Implement your API call here ********
+      // Example using fetch:
+      const response = await fetch("/api/auth/signout", { // ADJUST YOUR API ENDPOINT
+        method: "POST", // Or GET/DELETE depending on your API
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("API Error signing out:", response.status, errorData);
+        throw new Error(errorData.message || `Sign out failed (${response.status})`);
+      }
+
+      // Clear local user state
+      setUser(null);
+      console.log("User signed out successfully.");
+      // Toast message might be better placed in the component calling signOut,
+      // after other cleanup (like clearing IndexedDB) is done.
+
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      toast({
+        title: "Sign Out Failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        status: "error",
+      });
+      // Re-throw the error so the calling component knows it failed
+      throw error;
+    }
+  }, []); // No dependencies needed for sign out typically
+
+  // Provide the user state and the action functions through the context
+  const contextValue = {
+    user,
+    updateUser,
+    signOut,
+  };
 
   return (
-    <UserContext.Provider
-      value={{ user, isLoading, updateUser, refreshUser, signOut }}
-    >
-      {children}
-    </UserContext.Provider>
-  )
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
+  );
 }
 
-// Custom hook to use the user context
+// Define the custom hook to consume the context
 export function useUser() {
-  const context = useContext(UserContext)
-  if (context === undefined) {
-    throw new Error("useUser must be used within a UserProvider")
+  const context = useContext(UserContext);
+  if (context === null) {
+    // This error means you're trying to use `useUser` outside of a component
+    // wrapped in `<UserProvider>`. Check your component tree.
+    throw new Error("useUser must be used within a UserProvider");
   }
-  return context
+  return context; // Return the full context object { user, updateUser, signOut }
 }

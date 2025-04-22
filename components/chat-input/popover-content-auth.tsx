@@ -38,7 +38,7 @@ export function PopoverContentAuth() {
       align="start"
     >
       <img
-        src="/banner_forest.jpg"
+        src="/banner_forest.png"
         alt={`calm paint generate by ${APP_NAME}`}
         className="h-32 w-full object-cover"
       />

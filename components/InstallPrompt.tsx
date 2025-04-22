@@ -67,20 +67,21 @@ export function InstallPrompt() {
           <p className="text-neutral-600 dark:text-neutral-400">
             Tap <Share className="inline h-4 w-4 mx-1" /> and then{" "}
             <span className="whitespace-nowrap">
-              &ldquo;Add to Home Screen&rdquo; <Plus className="inline h-4 w-4 ml-1" />
+              “Add to Home Screen” <Plus className="inline h-4 w-4 ml-1" />
             </span>
           </p>
         );
       case 'android':
         return (
           <p className="text-neutral-600 dark:text-neutral-400">
-            Tap the menu <span className="font-bold">⋮</span> and select &ldquo;Install app&rdquo;
+            Tap the menu <span className="font-bold">⋮</span> and select “Install app”
           </p>
         );
       default:
         return (
           <p className="text-neutral-600 dark:text-neutral-400">
-            Install our app for a better experience <Download className="inline h-4 w-4 ml-1" />
+            Install AIDA for academic support and campus resources{" "}
+            <Download className="inline h-4 w-4 ml-1" />
           </p>
         );
     }
@@ -99,7 +100,7 @@ export function InstallPrompt() {
             <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <h3 className="font-medium text-xl text-neutral-900 dark:text-neutral-100">
-                  Install Scira
+                  Install AIDA
                 </h3>
                 {getInstructions()}
               </div>

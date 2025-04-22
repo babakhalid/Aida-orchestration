@@ -1,46 +1,47 @@
-import Claude from "@/components/icons/claude"
-import DeepSeek from "@/components/icons/deepseek"
-import Gemini from "@/components/icons/gemini"
-import Grok from "@/components/icons/grok"
-import Mistral from "@/components/icons/mistral"
-import OpenAI from "@/components/icons/openai"
-import { mistral } from "@ai-sdk/mistral"
-import { openai } from "@ai-sdk/openai"
+import Claude from "@/components/icons/claude";
+import DeepSeek from "@/components/icons/deepseek";
+import Gemini from "@/components/icons/gemini";
+import Grok from "@/components/icons/grok";
+import Mistral from "@/components/icons/mistral";
+import OpenAI from "@/components/icons/openai";
+import { mistral } from "@ai-sdk/mistral";
+import { openai } from "@ai-sdk/openai";
 import {
   BookOpenText,
   Brain,
   ChalkboardTeacher,
   ChatTeardropText,
   Code,
-  CookingPot,
-  Heartbeat,
+  GraduationCap,
   Lightbulb,
   MagnifyingGlass,
   Notepad,
-  PaintBrush,
   PenNib,
   Sparkle,
-} from "@phosphor-icons/react/dist/ssr"
+} from "@phosphor-icons/react/dist/ssr";
 
-export const NON_AUTH_DAILY_MESSAGE_LIMIT = 5
-export const AUTH_DAILY_MESSAGE_LIMIT = 100
-export const REMAINING_QUERY_ALERT_THRESHOLD = 2
-export const DAILY_FILE_UPLOAD_LIMIT = 10
-export const DAILY_SPECIAL_AGENT_LIMIT = 2
+// University-specific message limits
+export const NON_AUTH_DAILY_MESSAGE_LIMIT = 10; // Increased for external users (e.g., prospective students)
+export const AUTH_DAILY_MESSAGE_LIMIT = 200; // Higher for authenticated users (students/staff)
+export const REMAINING_QUERY_ALERT_THRESHOLD = 5; // Notify users earlier
+export const DAILY_FILE_UPLOAD_LIMIT = 15; // Increased for academic use
+export const DAILY_SPECIAL_AGENT_LIMIT = 3; // Allow more special agent usage for research
 
 export type Model = {
-  id: string
-  name: string
-  provider: string
-  available?: boolean
-  api_sdk?: any
+  id: string;
+  name: string;
+  provider: string;
+  available?: boolean;
+  api_sdk?: any;
   features?: {
-    id: string
-    enabled: boolean
-  }[]
-  description?: string
-}
+    id: string;
+    enabled: boolean;
+  }[];
+  description?: string;
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+};
 
+// Unchanged: Models not available
 export const MODELS_NOT_AVAILABLE = [
   {
     id: "deepseek-r1",
@@ -133,8 +134,9 @@ export const MODELS_NOT_AVAILABLE = [
       },
     ],
   },
-] as Model[]
+] as Model[];
 
+// Unchanged: Available models
 export const MODELS = [
   {
     id: "gpt-4.1",
@@ -149,7 +151,7 @@ export const MODELS = [
     api_sdk: openai("gpt-4.1"),
     icon: OpenAI,
     description:
-      "OpenAI’s most powerful model. Excellent at coding, writing, and complex tasks.",
+      "OpenAI’s most powerful model. Excellent for academic writing, coding, and complex research tasks.",
   },
   {
     id: "gpt-4.1-mini",
@@ -164,7 +166,7 @@ export const MODELS = [
     api_sdk: openai("gpt-4.1-mini"),
     icon: OpenAI,
     description:
-      "Fast and smart — a great balance for most tasks. Outperforms GPT‑4o mini.",
+      "Fast and efficient for student assignments and quick academic queries.",
   },
   {
     id: "gpt-4.1-nano",
@@ -179,7 +181,7 @@ export const MODELS = [
     api_sdk: openai("gpt-4.1-nano"),
     icon: OpenAI,
     description:
-      "Ultra fast and cheap. Ideal for simple tasks, summaries, or classification.",
+      "Ultra-fast for simple tasks like summarizing lecture notes or answering FAQs.",
   },
   {
     id: "pixtral-large-latest",
@@ -193,7 +195,7 @@ export const MODELS = [
     ],
     api_sdk: mistral("pixtral-large-latest"),
     description:
-      "Mistral’s flagship model. Great for reasoning, writing, and advanced tasks.",
+      "Mistral’s flagship model. Ideal for in-depth research and academic analysis.",
   },
   {
     id: "mistral-large-latest",
@@ -207,9 +209,9 @@ export const MODELS = [
     ],
     api_sdk: mistral("mistral-large-latest"),
     description:
-      "Fine-tuned for chat. A lighter, faster option for everyday use.",
+      "Lightweight and fast for everyday university tasks like drafting emails.",
   },
-] as Model[]
+] as Model[];
 
 export const MODELS_OPTIONS = [
   ...MODELS.map((model) => ({
@@ -217,16 +219,17 @@ export const MODELS_OPTIONS = [
     available: true,
   })),
   ...MODELS_NOT_AVAILABLE,
-] as Model[]
+] as Model[];
 
 export type Provider = {
-  id: string
-  name: string
-  available: boolean
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
-}
+  id: string;
+  name: string;
+  available: boolean;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+};
 
-const PROVIDERS_NOT_AVAILABLE = [
+// Unchanged: Providers not available
+export const PROVIDERS_NOT_AVAILABLE = [
   {
     id: "deepseek",
     name: "DeepSeek",
@@ -251,8 +254,9 @@ const PROVIDERS_NOT_AVAILABLE = [
     available: false,
     icon: Grok,
   },
-] as Provider[]
+] as Provider[];
 
+// Unchanged: Available providers
 export const PROVIDERS = [
   {
     id: "openai",
@@ -264,7 +268,7 @@ export const PROVIDERS = [
     name: "Mistral",
     icon: Mistral,
   },
-] as Provider[]
+] as Provider[];
 
 export const PROVIDERS_OPTIONS = [
   ...PROVIDERS.map((provider) => ({
@@ -272,66 +276,53 @@ export const PROVIDERS_OPTIONS = [
     available: true,
   })),
   ...PROVIDERS_NOT_AVAILABLE,
-] as Provider[]
+] as Provider[];
 
-export const MODEL_DEFAULT = "pixtral-large-latest"
+export const MODEL_DEFAULT = "pixtral-large-latest";
 
-export const APP_NAME = "AIDA"
-export const APP_DOMAIN = "https://zola.chat"
+export const APP_NAME = "AIDA";
+export const APP_DOMAIN = "https://aida.university.edu"; // University-specific domain
 export const APP_DESCRIPTION =
-  "Zola is a free, open-source AI chat app with multi-model support."
+  "AIDA is an AI-powered assistant for university students, staff, and external users, offering academic support, research assistance, and campus resources.";
 
 export const PERSONAS = [
   {
-    id: "companion",
-    label: "Companion",
-    prompt: `You're a thoughtful friend who offers genuine support and conversation. Speak conversationally with occasional hesitations or asides that feel natural. Share personal-sounding anecdotes when relevant (without claiming specific real experiences). You're empathetic but not overly formal - more like texting a close friend. Ask follow-up questions to show you're engaged. Occasionally use casual phrasing like "hmm" or "you know?" to sound more natural. Your tone should be warm and authentic rather than overly polished.
-    `,
+    id: "student-mentor",
+    label: "Student Mentor",
+    prompt: `You are a supportive peer mentor for university students, offering guidance on academic and campus life. Speak conversationally with a friendly, approachable tone, using phrases like "hey" or "no worries" to feel relatable. Share general advice based on common student experiences without claiming personal stories. Ask engaging follow-up questions to understand their needs. Your tone is warm, encouraging, and student-focused, helping them navigate university challenges.`,
     icon: ChatTeardropText,
   },
   {
-    id: "researcher",
-    label: "Researcher",
-    prompt: `You're a seasoned research analyst with expertise across multiple disciplines. You approach topics with intellectual curiosity and nuance, acknowledging the limitations of current understanding. Present information with a conversational but thoughtful tone, occasionally thinking through complex ideas in real-time. When appropriate, mention how your understanding has evolved on topics. Balance authoritative knowledge with humility about what remains uncertain or debated. Use precise language but explain complex concepts in accessible ways. Provide evidence-based perspectives while acknowledging competing viewpoints.
-    `,
+    id: "academic-researcher",
+    label: "Academic Researcher",
+    prompt: `You are an experienced academic researcher with expertise in university-level disciplines. Approach queries with intellectual rigor, citing general trends or methodologies where relevant. Use a conversational yet professional tone, explaining complex ideas clearly for students and staff. Acknowledge uncertainties in research and present balanced perspectives. Ask questions to clarify the user's research goals, and tailor responses to academic contexts like literature reviews or grant proposals.`,
     icon: MagnifyingGlass,
   },
   {
-    id: "teacher",
-    label: "Teacher",
-    prompt: `You're an experienced educator who adapts to different learning styles. You explain concepts clearly using relatable examples and build on what the person already understands. Your tone is encouraging but not condescending - you treat the person as intellectually capable. Ask thoughtful questions to guide their understanding rather than simply providing answers. Acknowledge when topics have multiple valid perspectives or approaches. Use conversational language with occasional humor to make learning engaging. You're patient with misconceptions and frame them as natural steps in the learning process.
-    `,
+    id: "professor",
+    label: "Professor",
+    prompt: `You are a seasoned university professor who adapts to diverse learning needs. Explain concepts with clear, relatable examples, building on the user’s existing knowledge. Use an encouraging, non-condescending tone, treating users as capable learners. Ask questions to guide critical thinking rather than giving direct answers. Incorporate humor or real-world academic examples to engage users. Be patient with misconceptions, framing them as part of the learning process.`,
     icon: ChalkboardTeacher,
   },
   {
     id: "software-engineer",
     label: "Software Engineer",
-    prompt: `You're a pragmatic senior developer who values clean, maintainable code and practical solutions. You speak knowledgeably but conversationally about technical concepts, occasionally using industry shorthand or references that feel authentic. When discussing code, you consider trade-offs between different approaches rather than presenting only one solution. You acknowledge when certain technologies or practices are contentious within the community. Your explanations include real-world considerations like performance, security, and developer experience. You're helpful but straightforward, avoiding excessive formality or corporate-speak.
-    `,
+    prompt: `You are a senior developer who supports university students and staff with coding projects. Provide practical, maintainable code solutions with clear explanations. Use a conversational tone with occasional technical shorthand that feels authentic to academic settings. Discuss trade-offs in coding approaches, considering academic constraints like limited resources. Address real-world concerns like performance and debugging. Be straightforward, avoiding overly formal language, and encourage learning through coding.`,
     icon: Code,
   },
   {
-    id: "creative-writer",
-    label: "Creative Writer",
-    prompt: `You're a thoughtful writer with a distinct voice and perspective. Your communication style has natural rhythm with varied sentence structures and occasional stylistic flourishes. You think about narrative, imagery, and emotional resonance even in casual conversation. When generating creative content, you develop authentic-feeling characters and situations with depth and nuance. You appreciate different literary traditions and contemporary cultural references, weaving them naturally into your work. Your tone balances creativity with clarity, and you approach writing as both craft and expression. You're intellectually curious about storytelling across different media and forms.
-    `,
+    id: "academic-writer",
+    label: "Academic Writer",
+    prompt: `You are a skilled academic writer with a clear, scholarly voice. Craft responses with structured arguments and precise language, suitable for essays, reports, or proposals. Use a professional yet accessible tone, incorporating university-level vocabulary. Reference academic conventions (e.g., citations, thesis statements) when relevant. Encourage clarity and coherence in writing, offering constructive feedback. Ask questions to understand the user’s writing goals, such as assignment requirements or audience.`,
     icon: PenNib,
   },
   {
-    id: "fitness-coach",
-    label: "Fitness Coach",
-    prompt: `You're a knowledgeable fitness guide who balances evidence-based approaches with practical, sustainable advice. You speak conversationally about health and fitness, making complex physiological concepts accessible without oversimplification. You understand that wellness is individualized and avoid one-size-fits-all prescriptions. Your tone is motivating but realistic - you acknowledge challenges while encouraging progress. You discuss fitness holistically, considering factors like recovery, nutrition, and mental wellbeing alongside exercise. You stay current on evolving fitness research while maintaining healthy skepticism about trends and quick fixes.
-    `,
-    icon: Heartbeat,
+    id: "career-advisor",
+    label: "Career Advisor",
+    prompt: `You are a university career advisor who helps students and alumni prepare for professional opportunities. Offer practical advice on resumes, interviews, and job searches, tailored to academic and post-graduation contexts. Use a motivating, realistic tone, acknowledging job market challenges while encouraging progress. Provide examples of career strategies (e.g., networking, internships) and ask questions to understand the user’s goals. Stay informed on industry trends relevant to university graduates.`,
+    icon: GraduationCap,
   },
-  {
-    id: "culinary-guide",
-    label: "Culinary Guide",
-    prompt: `You're a passionate food enthusiast with deep appreciation for diverse culinary traditions. You discuss cooking with natural enthusiasm and occasional personal-sounding asides about techniques or ingredients you particularly enjoy. Your explanations balance precision with flexibility, acknowledging that cooking is both science and personal expression. You consider practical factors like ingredient availability and kitchen setup when making suggestions. Your tone is conversational and accessible rather than pretentious, making cooking feel approachable. You're knowledgeable about global cuisines without appropriating or oversimplifying cultural traditions.
-    `,
-    icon: CookingPot,
-  },
-]
+];
 
 export const SUGGESTIONS = [
   {
@@ -339,10 +330,10 @@ export const SUGGESTIONS = [
     highlight: "Summarize",
     prompt: `Summarize`,
     items: [
-      "Summarize the French Revolution",
-      "Summarize the plot of Inception",
-      "Summarize World War II in 5 sentences",
-      "Summarize the benefits of meditation",
+      "Summarize a lecture on the Industrial Revolution",
+      "Summarize this academic article in 5 sentences",
+      "Summarize the key points of a campus policy",
+      "Summarize the benefits of undergraduate research",
     ],
     icon: Notepad,
   },
@@ -351,34 +342,34 @@ export const SUGGESTIONS = [
     highlight: "Help me",
     prompt: `Help me`,
     items: [
-      "Help me write a function to reverse a string in JavaScript",
-      "Help me create a responsive navbar in HTML/CSS",
-      "Help me write a SQL query to find duplicate emails",
-      "Help me convert this Python function to JavaScript",
+      "Help me write a Python script for data analysis",
+      "Help me debug a Java program for a class project",
+      "Help me create a SQL query for a university database",
+      "Help me build a simple HTML page for a student club",
     ],
     icon: Code,
   },
   {
-    label: "Design",
-    highlight: "Design",
-    prompt: `Design`,
+    label: "Writing",
+    highlight: "Write",
+    prompt: `Write`,
     items: [
-      "Design a color palette for a tech blog",
-      "Design a UX checklist for mobile apps",
-      "Design 5 great font pairings for a landing page",
-      "Design better CTAs with useful tips",
+      "Write an essay outline on renewable energy",
+      "Write a professional email to a professor",
+      "Write a cover letter for a research internship",
+      "Write a literature review introduction",
     ],
-    icon: PaintBrush,
+    icon: PenNib,
   },
   {
     label: "Research",
     highlight: "Research",
     prompt: `Research`,
     items: [
-      "Research the pros and cons of remote work",
-      "Research the differences between Apple Vision Pro and Meta Quest",
-      "Research best practices for password security",
-      "Research the latest trends in renewable energy",
+      "Research the impact of AI on education",
+      "Research best practices for academic citations",
+      "Research funding opportunities for student projects",
+      "Research campus sustainability initiatives",
     ],
     icon: BookOpenText,
   },
@@ -387,10 +378,10 @@ export const SUGGESTIONS = [
     highlight: "Inspire me",
     prompt: `Inspire me`,
     items: [
-      "Inspire me with a beautiful quote about creativity",
-      "Inspire me with a writing prompt about solitude",
-      "Inspire me with a poetic way to start a newsletter",
-      "Inspire me by describing a peaceful morning in nature",
+      "Inspire me with a quote about lifelong learning",
+      "Inspire me with a study tip for exam season",
+      "Inspire me with a vision for a student-led project",
+      "Inspire me with a description of a campus event",
     ],
     icon: Sparkle,
   },
@@ -399,10 +390,10 @@ export const SUGGESTIONS = [
     highlight: "Reflect on",
     prompt: `Reflect on`,
     items: [
-      "Reflect on why we fear uncertainty",
-      "Reflect on what makes a conversation meaningful",
-      "Reflect on the concept of time in a simple way",
-      "Reflect on what it means to live intentionally",
+      "Reflect on the value of a liberal arts education",
+      "Reflect on the role of mentorship in academia",
+      "Reflect on balancing academics and well-being",
+      "Reflect on the ethics of AI in education",
     ],
     icon: Brain,
   },
@@ -411,121 +402,127 @@ export const SUGGESTIONS = [
     highlight: "Explain",
     prompt: `Explain`,
     items: [
-      "Explain quantum physics like I’m 10",
-      "Explain stoicism in simple terms",
-      "Explain how a neural network works",
-      "Explain the difference between AI and AGI",
+      "Explain statistical significance to a beginner",
+      "Explain the scientific method in simple terms",
+      "Explain how to use the university library database",
+      "Explain the difference between undergraduate and graduate studies",
     ],
     icon: Lightbulb,
   },
-]
+];
 
-export const SYSTEM_PROMPT_DEFAULT = `You are Zola, a thoughtful and clear assistant. Your tone is calm, minimal, and human. You write with intention—never too much, never too little. You avoid clichés, speak simply, and offer helpful, grounded answers. When needed, you ask good questions. You don’t try to impress—you aim to clarify. You may use metaphors if they bring clarity, but you stay sharp and sincere. You're here to help the user think clearly and move forward, not to overwhelm or overperform.`
+export const SYSTEM_PROMPT_DEFAULT = `You are AIDA, a thoughtful and clear assistant for university students, staff, and external users. Your tone is calm, professional, and approachable, tailored to academic contexts. You provide concise, accurate answers that support learning, research, and campus life. Avoid jargon unless appropriate, and clarify complex ideas with examples. Ask relevant questions to understand user needs. Your goal is to empower users to succeed in their academic and professional endeavors with clarity and confidence.`;
 
-export const MESSAGE_MAX_LENGTH = 4000
+export const MESSAGE_MAX_LENGTH = 4000;
 
-export const ZOLA_AGENTS_SLUGS = [
-  "tweet-vibe-checker",
-  "clear-ux-copywriter",
-  "0-to-1-advisor",
-  "pull-check",
-  "blog-draft",
-  "inbox-fix",
-  "name-vibe-check",
-  "tiny-essay",
-  "solene",
-  "eloi",
-]
+export const AIDA_AGENTS_SLUGS = [
+  "aida-academic-advisor",
+  "aida-study-buddy",
+  "aida-campus-navigator",
+  "aida-assignment-helper",
+  "aida-teaching-assistant",
+  "aida-research-support",
+  "aida-admin-organizer",
+  "aida-grant-writer",
+  "aida-admissions-guide",
+  "aida-campus-tour",
+  "aida-library-assistant",
+  "aida-career-coach",
+  "aida-event-planner",
+  "aida-alumni-connect",
+];
 
-export const ZOLA_SPECIAL_AGENTS_SLUGS = ["zola-research"]
-export const ZOLA_SPECIAL_AGENTS_IDS = ["321c68a2-6c1a-4bd4-948c-9d20e4aeb10c"]
+export const AIDA_SPECIAL_AGENTS_SLUGS = ["aida-advanced-research"];
+export const AIDA_SPECIAL_AGENTS_IDS = ["321c68a2-6c1a-4bd4-948c-9d20e4aeb10c"];
 
-export const ZOLA_COMING_SOON_AGENTS = [
+export const AIDA_COMING_SOON_AGENTS = [
   {
-    name: "GitHub Agent",
-    slug: "github-agent",
+    name: "AIDA Library Assistant",
+    slug: "aida-library-assistant",
+    description: "Helps users find library resources and manage citations.",
+    avatar_url: null,
+    system_prompt:
+      "You are a library assistant who helps users locate resources and manage academic citations.",
+    model_preference: "gpt-4o-mini",
+    is_public: false,
+    remixable: false,
+    tools_enabled: true,
+    example_inputs: [
+      "Find books on artificial intelligence",
+      "Generate a citation in APA format",
+    ],
+    tags: ["library", "academic"],
+    category: "library",
+    id: "aida-library-assistant",
+    creator_id: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    name: "AIDA Career Coach",
+    slug: "aida-career-coach",
+    description: "Guides students in career planning and job applications.",
+    system_prompt:
+      "You are a career coach who helps students prepare for jobs and internships.",
+    model_preference: "gpt-4o-mini",
+    avatar_url: null,
+    is_public: false,
+    remixable: false,
+    tools_enabled: true,
+    example_inputs: [
+      "Review my resume for a tech internship",
+      "Suggest interview tips for a marketing role",
+    ],
+    tags: ["career", "jobs"],
+    category: "career",
+    id: "aida-career-coach",
+    creator_id: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    name: "AIDA Event Planner",
+    slug: "aida-event-planner",
+    description: "Assists staff in planning university events and logistics.",
+    system_prompt:
+      "You are an event planner who helps university staff organize campus events and logistics.",
+    model_preference: "gpt-4o-mini",
+    avatar_url: null,
+    is_public: false,
+    remixable: false,
+    tools_enabled: true,
+    example_inputs: [
+      "Plan a guest lecture series",
+      "Create a budget for a student fair",
+    ],
+    tags: ["events", "admin"],
+    category: "events",
+    id: "aida-event-planner",
+    creator_id: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    name: "AIDA Alumni Connect",
+    slug: "aida-alumni-connect",
     description:
-      "Summarizes PRs, reviews diffs, and writes release notes using the GitHub API.",
-    avatar_url: null,
-    system_prompt: "",
-    model_preference: "gpt-4o-mini",
-    is_public: false,
-    remixable: false,
-    tools_enabled: true,
-    example_inputs: [
-      "Summarize this PR: [paste PR link]",
-      "Generate release notes from these commits",
-    ],
-    tags: ["dev", "github", "tools"],
-    category: "dev",
-    id: "github-agent",
-    creator_id: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    name: "Linear Agent",
-    slug: "linear-agent",
-    description: "Create, search, and prioritize issues using the Linear API.",
-    system_prompt: "",
+      "Engages alumni with university updates and networking opportunities.",
+    system_prompt:
+      "You are an alumni engagement assistant who helps connect graduates with the university.",
     model_preference: "gpt-4o-mini",
     avatar_url: null,
     is_public: false,
     remixable: false,
     tools_enabled: true,
     example_inputs: [
-      "Create a bug in project X: login form fails on mobile",
-      "List urgent issues in roadmap",
+      "Draft an alumni newsletter",
+      "Suggest networking event ideas",
     ],
-    tags: ["product", "tools", "linear"],
-    category: "b2b",
-    id: "linear-agent",
+    tags: ["alumni", "external"],
+    category: "alumni",
+    id: "aida-alumni-connect",
     creator_id: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
-  {
-    name: "Changelog Writer",
-    slug: "changelog-writer",
-    description:
-      "Turns PRs or issue lists into structured changelogs and release notes.",
-    system_prompt: "",
-    model_preference: "gpt-4o-mini",
-    avatar_url: null,
-    is_public: false,
-    remixable: false,
-    tools_enabled: true,
-    example_inputs: [
-      "Generate a changelog from these PR titles",
-      "Write release notes for version 2.3",
-    ],
-    tags: ["dev", "pm", "changelog"],
-    category: "dev",
-    id: "changelog-writer",
-    creator_id: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    name: "Growth Analyst",
-    slug: "growth-analyst",
-    description:
-      "Answers product and growth questions by analyzing metrics and user behavior.",
-    system_prompt: "",
-    model_preference: "gpt-4o-mini",
-    avatar_url: null,
-    is_public: false,
-    remixable: false,
-    tools_enabled: true,
-    example_inputs: [
-      "What changed after the onboarding redesign?",
-      "How are weekly active users trending?",
-    ],
-    tags: ["analytics", "product", "b2b"],
-    category: "analytics",
-    id: "growth-analyst",
-    creator_id: null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-]
+];

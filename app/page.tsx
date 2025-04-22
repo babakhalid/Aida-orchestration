@@ -117,6 +117,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import MCPServerList from '@/components/mcp-server-list';
 import { Header } from '@/components/layout/header';
 
+
 export const maxDuration = 120;
 
 interface Attachment {
@@ -1588,14 +1589,15 @@ const HomeContent = () => {
             <Header />
             <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
                 {status === 'ready' && messages.length === 0 && (
-                    <div className="text-center py-12">
-                        <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
-                            Explore with AIDA
-                        </h1>
-                        <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-                            Ask questions, get insights, and discover new information with our advanced AI assistant.
-                        </p>
+                    <div className="mb-12 text-center">
+                    <h1 className="text-foreground text-sm font-medium">Agents</h1>
+                    <div className="text-foreground mx-auto my-4 max-w-2xl text-3xl font-medium tracking-tight md:text-5xl">
+                      Your University AI Support
                     </div>
+                    <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
+                      A collection of AI assistants tailored for academic success, campus navigation, and university administration.
+                    </p>
+                  </div>
                 )}
 
                 <AnimatePresence>

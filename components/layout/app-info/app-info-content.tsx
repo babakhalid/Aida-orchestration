@@ -8,27 +8,7 @@ export function AppInfoContent() {
         {APP_DESCRIPTION} Built with Vercel&apos;s AI SDK, Supabase, and prompt-kit
         components.
       </p>
-      <p className="text-foreground leading-relaxed">
-        The code is available on{" "}
-        <a
-          href="https://github.com/ibelick/zola"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline"
-        >
-          GitHub
-        </a>
-        . Made by{" "}
-        <a
-          href="https://twitter.com/ibelick"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline"
-        >
-          @ibelick
-        </a>
-        .
-      </p>
+      
     </div>
   )
 }

@@ -6,7 +6,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { AppInfoTrigger } from "./app-info/app-info-trigger";
 import { FeedbackTrigger } from "./feedback/feedback-trigger";
-import { SettingsTrigger } from "./settings/settings-trigger";
+// Import the renamed component
+import { SettingsMenuItem } from "./settings/settings-trigger"; // <-- Renamed import
 
 
 export function UserMenu() {
@@ -18,8 +19,9 @@ export function UserMenu() {
     <DropdownMenu>
       <Tooltip>
         <TooltipTrigger asChild>
-          <DropdownMenuTrigger>
-            <Avatar>
+          {/* Add asChild here for consistency and proper prop merging */}
+          <DropdownMenuTrigger asChild>
+            <Avatar className="cursor-pointer"> {/* Added cursor-pointer for better UX */}
               <AvatarImage src={user?.profile_image ?? undefined} />
               <AvatarFallback>{user?.display_name?.charAt(0)}</AvatarFallback>
             </Avatar>
@@ -31,18 +33,29 @@ export function UserMenu() {
         className="w-56"
         align="end"
         forceMount
+        // Prevent focus jump after closing dialog/drawer opened from item
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
-        <DropdownMenuItem className="flex flex-col items-start gap-0 no-underline hover:bg-transparent focus:bg-transparent">
-          <span>{user?.display_name}</span>
-          <span className="text-muted-foreground max-w-full truncate">
+        {/* Make this non-interactive or use DropdownMenuLabel */}
+        <div className="px-2 py-1.5 text-sm"> {/* Changed to div */}
+          <div className="font-medium">{user?.display_name}</div>
+          <div className="text-muted-foreground max-w-[calc(theme(width.56)-theme(spacing.4))] truncate text-xs"> {/* Adjusted width calculation */}
             {user?.email}
-          </span>
-        </DropdownMenuItem>
+          </div>
+        </div>
         <DropdownMenuSeparator />
-        <SettingsTrigger />
+        {/* Use the renamed component */}
+        <SettingsMenuItem /> {/* <-- Use the renamed component */}
         <FeedbackTrigger />
         <AppInfoTrigger />
+         {/* Consider adding a Sign Out item here as well */}
+         {/* Example:
+         <DropdownMenuSeparator />
+         <DropdownMenuItem onClick={handleSignOut}>
+            <SignOut className="mr-2 size-4" />
+            <span>Sign Out</span>
+         </DropdownMenuItem>
+         */}
       </DropdownMenuContent>
     </DropdownMenu>
   )

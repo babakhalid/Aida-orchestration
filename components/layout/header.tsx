@@ -1,5 +1,3 @@
-// src/components/layout/header.tsx (or wherever your Header component is defined)
-
 "use client"
 
 import { HistoryTrigger } from "@/components/history/history-trigger"
@@ -12,15 +10,14 @@ import { useUser } from "@/providers/user-provider"
 import type { Agent } from "@/app/types/agent"
 import { Button } from "@/components/ui/button"
 import { useChats } from "@/lib/chat-store/chats/provider"
-import { APP_NAME } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
-import { Info } from "@phosphor-icons/react"
+import { Info, Moon, Sun } from "@phosphor-icons/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
-import { AgentLink } from "./agent-link" // Assuming this path is correct
-import { HeaderAgent } from "./header-agent" // Assuming this path is correct
-import { TooltipProvider } from "@/components/ui/tooltip"; // <-- Import TooltipProvider
+import { AgentLink } from "./agent-link"
+import { HeaderAgent } from "./header-agent"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 type AgentHeader = Pick<Agent, "name" | "description" | "avatar_url">
 
@@ -32,9 +29,31 @@ export function Header() {
   const { chatId } = useChatSession()
   const currentChat = chatId ? getChatById(chatId) : null
   const [agent, setAgent] = useState<AgentHeader | null>(null)
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  // Toggle theme and update root class
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode)
+    if (isDarkMode) {
+      document.documentElement.classList.remove("dark")
+    } else {
+      document.documentElement.classList.add("dark")
+    }
+  }
+
+  // Sync theme with system preference on mount
+  useEffect(() => {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    setIsDarkMode(prefersDark)
+    if (prefersDark) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  }, [])
 
   useEffect(() => {
-    // reset agent when pathname changes
+    // Reset agent when pathname changes
     setAgent(null)
   }, [pathname])
 
@@ -63,18 +82,19 @@ export function Header() {
   const isLoggedIn = !!user
 
   return (
-    // Wrap the header content with TooltipProvider
-    <TooltipProvider delayDuration={100}> {/* You can adjust delayDuration if needed */}
-      <header className="h-app-header fixed top-0 right-0 left-0 z-50">
-        {/* This div is just for the gradient mask, doesn't need the provider */}
+    <TooltipProvider delayDuration={100}>
+      <header className="h-app-header fixed top-0 right-0 left-0 z-50 mt-4">
         <div className="h-app-header top-app-header bg-background pointer-events-none absolute left-0 z-50 mx-auto w-full to-transparent backdrop-blur-xl [-webkit-mask-image:linear-gradient(to_bottom,black,transparent)] lg:hidden"></div>
 
-        {/* This div contains the actual interactive elements */}
         <div className="bg-background relative mx-auto flex h-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:bg-transparent lg:px-8">
           {Boolean(!agent || !isMobile) && (
             <div className="flex-1">
-              <Link href="/" className="text-xl font-medium tracking-tight">
-                {APP_NAME}
+              <Link href="/" className="inline-block">
+                <img
+                  src="/logo_aida.svg"
+                  alt="AIDA Logo"
+                  className="h-8 w-auto"
+                />
               </Link>
             </div>
           )}
@@ -93,13 +113,26 @@ export function Header() {
                     variant="ghost"
                     size="icon"
                     className="bg-background/80 hover:bg-muted text-muted-foreground h-8 w-8 rounded-full"
-                    aria-label={`About ${APP_NAME}`}
+                    aria-label="About AIDA"
                   >
                     <Info className="size-4" />
                   </Button>
                 }
               />
-              <AgentLink /> {/* Uses Tooltip */}
+              <AgentLink />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="bg-background/80 hover:bg-muted text-muted-foreground h-8 w-8 rounded-full"
+                onClick={toggleTheme}
+                aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {isDarkMode ? (
+                  <Sun className="size-4" />
+                ) : (
+                  <Moon className="size-4" />
+                )}
+              </Button>
               <Link
                 href="/auth"
                 className="font-base text-muted-foreground hover:text-foreground text-base transition-colors"
@@ -110,13 +143,26 @@ export function Header() {
           ) : (
             <div className="flex flex-1 items-center justify-end gap-4">
               <ButtonNewChat />
-              <AgentLink /> {/* Uses Tooltip */}
-              <HistoryTrigger /> {/* Might use Tooltip */}
-              <UserMenu /> {/* Might use Tooltip */}
+              <AgentLink />
+              <HistoryTrigger />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="bg-background/80 hover:bg-muted text-muted-foreground h-8 w-8 rounded-full"
+                onClick={toggleTheme}
+                aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {isDarkMode ? (
+                  <Sun className="size-4" />
+                ) : (
+                  <Moon className="size-4" />
+                )}
+              </Button>
+              <UserMenu />
             </div>
           )}
         </div>
       </header>
-    </TooltipProvider> // Close TooltipProvider
+    </TooltipProvider>
   )
 }
