@@ -20,6 +20,8 @@ import {
   Sparkle,
 } from "@phosphor-icons/react/dist/ssr";
 
+import { Microscope, Briefcase, Factory } from 'lucide-react';
+
 // University-specific message limits
 export const NON_AUTH_DAILY_MESSAGE_LIMIT = 10; // Increased for external users (e.g., prospective students)
 export const AUTH_DAILY_MESSAGE_LIMIT = 200; // Higher for authenticated users (students/staff)
@@ -326,88 +328,52 @@ export const PERSONAS = [
 
 export const SUGGESTIONS = [
   {
-    label: "Summary",
-    highlight: "Summarize",
-    prompt: `Summarize`,
+    label: "Education",
+    highlight: "Learn",
+    prompt: "Learn",
     items: [
-      "Summarize a lecture on the Industrial Revolution",
-      "Summarize this academic article in 5 sentences",
-      "Summarize the key points of a campus policy",
-      "Summarize the benefits of undergraduate research",
+      "Learn key concepts in calculus for beginners",
+      "Learn effective study strategies for exams",
+      "Learn how to use the university library database",
+      "Learn the basics of academic writing",
     ],
-    icon: Notepad,
-  },
-  {
-    label: "Code",
-    highlight: "Help me",
-    prompt: `Help me`,
-    items: [
-      "Help me write a Python script for data analysis",
-      "Help me debug a Java program for a class project",
-      "Help me create a SQL query for a university database",
-      "Help me build a simple HTML page for a student club",
-    ],
-    icon: Code,
-  },
-  {
-    label: "Writing",
-    highlight: "Write",
-    prompt: `Write`,
-    items: [
-      "Write an essay outline on renewable energy",
-      "Write a professional email to a professor",
-      "Write a cover letter for a research internship",
-      "Write a literature review introduction",
-    ],
-    icon: PenNib,
+    icon: GraduationCap,
   },
   {
     label: "Research",
     highlight: "Research",
-    prompt: `Research`,
+    prompt: "Research",
     items: [
-      "Research the impact of AI on education",
-      "Research best practices for academic citations",
-      "Research funding opportunities for student projects",
-      "Research campus sustainability initiatives",
+      "Research recent papers on AI in education",
+      "Research funding for undergraduate projects",
+      "Research best practices for literature reviews",
+      "Research university sustainability initiatives",
     ],
-    icon: BookOpenText,
+    icon: Microscope,
   },
   {
-    label: "Get inspired",
-    highlight: "Inspire me",
-    prompt: `Inspire me`,
+    label: "Entrepreneurship",
+    highlight: "Innovate",
+    prompt: "Innovate",
     items: [
-      "Inspire me with a quote about lifelong learning",
-      "Inspire me with a study tip for exam season",
-      "Inspire me with a vision for a student-led project",
-      "Inspire me with a description of a campus event",
+      "Innovate a business idea for campus sustainability",
+      "Innovate a pitch for a student tech startup",
+      "Innovate a marketing plan for a student event",
+      "Innovate a solution for student collaboration",
     ],
-    icon: Sparkle,
+    icon: Briefcase,
   },
   {
-    label: "Think deeply",
-    highlight: "Reflect on",
-    prompt: `Reflect on`,
+    label: "Operations",
+    highlight: "Manage",
+    prompt: "Manage",
     items: [
-      "Reflect on the value of a liberal arts education",
-      "Reflect on the role of mentorship in academia",
-      "Reflect on balancing academics and well-being",
-      "Reflect on the ethics of AI in education",
+      "Manage an email draft for a staff meeting request",
+      "Manage a summary of campus event policies",
+      "Manage a checklist for organizing a university event",
+      "Manage a guide for submitting maintenance requests",
     ],
-    icon: Brain,
-  },
-  {
-    label: "Learn gently",
-    highlight: "Explain",
-    prompt: `Explain`,
-    items: [
-      "Explain statistical significance to a beginner",
-      "Explain the scientific method in simple terms",
-      "Explain how to use the university library database",
-      "Explain the difference between undergraduate and graduate studies",
-    ],
-    icon: Lightbulb,
+    icon: Factory,
   },
 ];
 

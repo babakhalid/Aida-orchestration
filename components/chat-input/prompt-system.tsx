@@ -4,18 +4,21 @@ import type { AgentsSuggestions } from "@/app/types/agent"
 import { AIDA_AGENTS_SLUGS } from "@/lib/config"
 import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
-import { AnimatePresence, motion } from "motion/react"
+import { AnimatePresence, motion } from "framer-motion"
 import React, { memo, useEffect, useMemo, useState } from "react"
 import { Agents } from "./agents"
 import { Suggestions } from "./suggestions"
+import { Message, CreateMessage } from "ai"
 
-type PromptSystemProps = {
+interface PromptSystemProps {
   onValueChange: (value: string) => void
   onSuggestion: (suggestion: string) => void
   onSelectSystemPrompt: (systemPrompt: string) => void
   value: string
   setSelectedAgentId: (agentId: string | null) => void
   selectedAgentId: string | null
+  append?: (message: Message | CreateMessage) => Promise<string | null | undefined>
+  setHasSubmitted?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const PromptSystem = memo(function PromptSystem({
@@ -25,11 +28,11 @@ export const PromptSystem = memo(function PromptSystem({
   value,
   setSelectedAgentId,
   selectedAgentId,
+  append,
+  setHasSubmitted,
 }: PromptSystemProps) {
   const [isAgentMode, setIsAgentMode] = useState(false)
-  const [sugestedAgents, setSugestedAgents] = useState<
-    AgentsSuggestions[] | null
-  >(null)
+  const [sugestedAgents, setSugestedAgents] = useState<AgentsSuggestions[]>([])
 
   useEffect(() => {
     const fetchAgents = async () => {
@@ -40,7 +43,8 @@ export const PromptSystem = memo(function PromptSystem({
         .in("slug", AIDA_AGENTS_SLUGS)
 
       if (error) {
-        throw new Error("Error fetching agents: " + error.message)
+        console.error("Error fetching agents:", error.message)
+        return
       }
 
       const randomAgents = data
@@ -75,36 +79,42 @@ export const PromptSystem = memo(function PromptSystem({
         },
       },
     ],
-    [isAgentMode]
+    [isAgentMode, onSelectSystemPrompt, setSelectedAgentId]
   )
 
   return (
     <>
-      <div className="relative order-1 w-full md:absolute md:bottom-[-70px] md:order-2 md:h-[70px]">
+      <div className="relative order-1 w-full md:order-2">
         <AnimatePresence mode="popLayout">
           {isAgentMode ? (
             <Agents
+              key="agents"
               setSelectedAgentId={setSelectedAgentId}
               selectedAgentId={selectedAgentId}
-              sugestedAgents={sugestedAgents || []}
+              sugestedAgents={sugestedAgents}
             />
           ) : (
             <Suggestions
+              key="suggestions"
               onValueChange={onValueChange}
               onSuggestion={onSuggestion}
               value={value}
+              append={append!}
+              setHasSubmitted={setHasSubmitted!}
             />
           )}
         </AnimatePresence>
       </div>
-      <div className="relative right-0 bottom-0 left-0 mx-auto mb-4 flex h-8 w-auto items-center justify-center rounded-lg p-1 md:fixed md:bottom-0">
-        <div className="relative flex h-full flex-row gap-3">
+      <div className="relative mx-auto mb-4 flex h-9 w-auto items-center justify-center rounded-lg p-1 bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm">
+        <div className="relative flex h-full flex-row gap-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               className={cn(
-                "relative z-10 flex h-full flex-1 items-center justify-center rounded-md px-2 py-1 text-xs font-medium transition-colors active:scale-[0.98]",
-                !tab.isActive ? "text-muted-foreground" : "text-foreground"
+                "relative z-10 flex h-full flex-1 items-center justify-center rounded-md px-3 py-1 text-sm font-medium transition-colors active:scale-[0.98]",
+                tab.isActive
+                  ? "text-neutral-900 dark:text-neutral-100"
+                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
               )}
               onClick={tab.onClick}
               type="button"
@@ -112,23 +122,16 @@ export const PromptSystem = memo(function PromptSystem({
               <AnimatePresence initial={false}>
                 {tab.isActive && (
                   <motion.div
-                    layoutId={`background`}
-                    className={cn("bg-muted absolute inset-0 z-10 rounded-lg")}
+                    layoutId="background"
+                    className="absolute inset-0 z-0 bg-white dark:bg-neutral-900 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-800"
                     transition={{
                       duration: 0.25,
                       type: "spring",
                       bounce: 0,
                     }}
-                    initial={{ opacity: 1 }}
-                    animate={{
-                      opacity: 1,
-                    }}
-                    exit={{
-                      opacity: 0,
-                    }}
-                    style={{
-                      originY: "0px",
-                    }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                   />
                 )}
               </AnimatePresence>

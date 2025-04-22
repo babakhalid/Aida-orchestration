@@ -1,5 +1,5 @@
 import { AgentDetail } from "@/components/agents/agent-detail"
-import { LayoutApp } from "@/components/layout/layout-app"
+import LayoutApp from "@/components/layout/layout-app"
 import { MessagesProvider } from "@/lib/chat-store/messages/provider"
 import { createClient } from "@/lib/supabase/server"
 

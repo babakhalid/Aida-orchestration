@@ -1,5 +1,5 @@
 import { AgentsPage } from "@/components/agents/agents-page";
-import { LayoutApp } from "@/components/layout/layout-app";
+import LayoutApp  from "@/components/layout/layout-app";
 import { MessagesProvider } from "@/lib/chat-store/messages/provider";
 import { AIDA_AGENTS_SLUGS, AIDA_SPECIAL_AGENTS_SLUGS } from "@/lib/config"; // Updated imports
 import { createClient } from "@/lib/supabase/server";

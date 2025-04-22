@@ -18,10 +18,11 @@ import { useEffect, useState } from "react"
 import { AgentLink } from "./agent-link"
 import { HeaderAgent } from "./header-agent"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { cn, searchGroups, SearchGroupId } from "@/lib/utils"
 
 type AgentHeader = Pick<Agent, "name" | "description" | "avatar_url">
 
-export function Header() {
+export function Header({ selectedGroup }: { selectedGroup: SearchGroupId }) {
   const pathname = usePathname()
   const isMobile = useBreakpoint(768)
   const { user } = useUser()
@@ -31,7 +32,10 @@ export function Header() {
   const [agent, setAgent] = useState<AgentHeader | null>(null)
   const [isDarkMode, setIsDarkMode] = useState(false)
 
-  // Toggle theme and update root class
+  const selectedGroupData = searchGroups.find(group => group.id === selectedGroup) || { name: "Web", icon: null }
+  const selectedGroupLabel = selectedGroupData.name
+  const SelectedGroupIcon = selectedGroupData.icon
+
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode)
     if (isDarkMode) {
@@ -41,7 +45,6 @@ export function Header() {
     }
   }
 
-  // Sync theme with system preference on mount
   useEffect(() => {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
     setIsDarkMode(prefersDark)
@@ -53,7 +56,6 @@ export function Header() {
   }, [])
 
   useEffect(() => {
-    // Reset agent when pathname changes
     setAgent(null)
   }, [pathname])
 
@@ -87,17 +89,27 @@ export function Header() {
         <div className="h-app-header top-app-header bg-background pointer-events-none absolute left-0 z-50 mx-auto w-full to-transparent backdrop-blur-xl [-webkit-mask-image:linear-gradient(to_bottom,black,transparent)] lg:hidden"></div>
 
         <div className="bg-background relative mx-auto flex h-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:bg-transparent lg:px-8">
-          {Boolean(!agent || !isMobile) && (
-            <div className="flex-1">
-              <Link href="/" className="inline-block">
-                <img
-                  src="/logo_aida.svg"
-                  alt="AIDA Logo"
-                  className="h-8 w-auto"
-                />
-              </Link>
-            </div>
-          )}
+          <div className="flex items-center gap-3 flex-1">
+            <Link href="/" className="inline-block">
+              <img
+                src="/logo_aida.svg"
+                alt="AIDA Logo"
+                className="h-8 w-auto"
+              />
+            </Link>
+            <span className={cn(
+              "flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700 shadow-sm transition-colors duration-200",
+              isMobile && "gap-0.5 px-2 py-0.5 text-[10px]"
+            )}>
+              {SelectedGroupIcon && (
+                <SelectedGroupIcon className={cn(
+                  "size-3 text-neutral-600 dark:text-neutral-400",
+                  isMobile && "size-2.5"
+                )} />
+              )}
+              {selectedGroupLabel}
+            </span>
+          </div>
           {agent && (
             <HeaderAgent
               avatarUrl={agent?.avatar_url || ""}

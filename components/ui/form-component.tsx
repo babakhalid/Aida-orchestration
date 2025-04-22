@@ -52,9 +52,9 @@ const XAIIcon = ({ className }: { className?: string }) => (
 );
 
 const models = [
-    { value: "scira-default", label: "Grok 3.0", icon: XAIIcon, iconClass: "text-gray-400", description: "xAI's most intelligent model", color: "black", vision: false, experimental: false, category: "Stable" },
-    { value: "scira-grok-3-mini", label: "Grok 3.0 Mini", icon: XAIIcon, iconClass: "text-gray-400", description: "xAI's most efficient model", color: "gray", vision: false, experimental: false, category: "Stable" },
-    { value: "scira-vision", label: "Grok 2.0 Vision", icon: XAIIcon, iconClass: "text-gray-400", description: "xAI's most advanced vision model", color: "indigo", vision: true, experimental: false, category: "Stable" },
+    { value: "scira-default", label: "Aida 3.0", icon: XAIIcon, iconClass: "text-gray-400", description: "xAI's most intelligent model", color: "black", vision: false, experimental: false, category: "Stable" },
+    { value: "scira-grok-3-mini", label: "Aida 3.0 Mini", icon: XAIIcon, iconClass: "text-gray-400", description: "xAI's most efficient model", color: "gray", vision: false, experimental: false, category: "Stable" },
+    { value: "scira-vision", label: "Aida 2.0 Vision", icon: XAIIcon, iconClass: "text-gray-400", description: "xAI's most advanced vision model", color: "indigo", vision: true, experimental: false, category: "Stable" },
     { value: "scira-google", label: "Gemini 2.5 Flash (Preview)", icon: "/google.svg", iconClass: "text-gray-400", description: "Google's most advanced model", color: "blue", vision: true, experimental: false, category: "Stable" },
     { value: "scira-4.1-mini", label: "GPT 4.1 Mini", icon: "/openai.svg", iconClass: "text-gray-400", description: "OpenAI's smartest mini model", color: "blue", vision: true, experimental: false, category: "Stable" },
     { value: "scira-o4-mini", label: "o4 mini", icon: "/openai.svg", iconClass: "text-gray-400", description: "OpenAI's mini reasoning model", color: "blue", vision: true, experimental: false, category: "Stable" },

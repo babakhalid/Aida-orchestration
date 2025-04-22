@@ -116,6 +116,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import MCPServerList from '@/components/mcp-server-list';
 import { Header } from '@/components/layout/header';
+import { Suggestions } from '@/components/chat-input/suggestions';
 
 
 export const maxDuration = 120;
@@ -1586,212 +1587,35 @@ const HomeContent = () => {
 
     return (
         <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900 font-sans">
-            <Header />
-            <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
-                {status === 'ready' && messages.length === 0 && (
-                    <div className="mb-12 text-center">
-                    <h1 className="text-foreground text-sm font-medium">Agents</h1>
-                    <div className="text-foreground mx-auto my-4 max-w-2xl text-3xl font-medium tracking-tight md:text-5xl">
-                      Your University AI Support
-                    </div>
-                    <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-                      A collection of AI assistants tailored for academic success, campus navigation, and university administration.
-                    </p>
-                  </div>
-                )}
-
-                <AnimatePresence>
-                    {messages.length === 0 && !hasSubmitted && (
-                        <motion.div
-                            initial={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 20 }}
-                            transition={{ duration: 0.5 }}
-                            className="mt-8"
-                        >
-                            <FormComponent
-                                input={input}
-                                setInput={setInput}
-                                attachments={attachments}
-                                setAttachments={setAttachments}
-                                handleSubmit={handleSubmit}
-                                fileInputRef={fileInputRef}
-                                inputRef={inputRef}
-                                stop={stop}
-                                messages={messages as any}
-                                append={append}
-                                selectedModel={selectedModel}
-                                setSelectedModel={handleModelChange}
-                                resetSuggestedQuestions={resetSuggestedQuestions}
-                                lastSubmittedQueryRef={lastSubmittedQueryRef}
-                                selectedGroup={selectedGroup}
-                                setSelectedGroup={setSelectedGroup}
-                                showExperimentalModels={true}
-                                status={status}
-                                setHasSubmitted={setHasSubmitted}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-            
-                <div className="space-y-8 mt-8">
-                    {memoizedMessages.map((message, index) => (
-                        <div key={index} className={cn(
-                            message.role === 'assistant' && index < memoizedMessages.length - 1
-                                ? 'pb-8 border-b border-neutral-200 dark:border-neutral-800'
-                                : ''
-                        )}>
-                            {message.role === 'user' && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5 }}
-                                    className="mb-6"
-                                >
-                                    <div className="group relative">
-                                        {isEditingMessage && editingMessageIndex === index ? (
-                                            <form onSubmit={handleMessageUpdate} className="w-full">
-                                                <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
-                                                    <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
-                                                        <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-                                                            Edit Message
-                                                        </span>
-                                                        <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                                                            <Button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={() => {
-                                                                    setIsEditingMessage(false);
-                                                                    setEditingMessageIndex(-1);
-                                                                    setInput('');
-                                                                }}
-                                                                className="h-8 w-8 rounded-l-lg"
-                                                                disabled={status === 'submitted' || status === 'streaming'}
-                                                            >
-                                                                <X className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                type="submit"
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 rounded-r-lg"
-                                                                disabled={status === 'submitted' || status === 'streaming'}
-                                                            >
-                                                                <ArrowRight className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                    <div className="p-4">
-                                                        <textarea
-                                                            value={input}
-                                                            onChange={(e) => setInput(e.target.value)}
-                                                            rows={4}
-                                                            className="w-full resize-none rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-3 text-base text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                                            placeholder="Edit your message..."
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </form>
-                                        ) : (
-                                            <div className="relative">
-                                                <p className="text-lg font-medium text-neutral-900 dark:text-neutral-100 pr-12">
-                                                    {message.content}
-                                                </p>
-                                                {!isEditingMessage && index === lastUserMessageIndex && (
-                                                    <div className="absolute right-0 top-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => handleMessageEdit(index)}
-                                                            className="h-8 w-8 rounded-l-lg"
-                                                            disabled={status === 'submitted' || status === 'streaming'}
-                                                        >
-                                                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
-                                                                <path
-                                                                    d="M12.1464 1.14645C12.3417 0.951184 12.6583 0.951184 12.8535 1.14645L14.8535 3.14645C15.0488 3.34171 15.0488 3.65829 14.8535 3.85355L10.9109 7.79618C10.8349 7.87218 10.7471 7.93543 10.651 7.9835L6.72359 9.94721C6.53109 10.0435 6.29861 10.0057 6.14643 9.85355C5.99425 9.70137 5.95652 9.46889 6.05277 9.27639L8.01648 5.34897C8.06455 5.25283 8.1278 5.16507 8.2038 5.08907L12.1464 1.14645ZM12.5 2.20711L8.91091 5.79618L7.87266 7.87267L9.94915 6.83442L13.5382 3.24535L12.5 2.20711ZM8.99997 1.49997C9.27611 1.49997 9.49997 1.72383 9.49997 1.99997C9.49997 2.27611 9.27611 2.49997 8.99997 2.49997H4.49997C3.67154 2.49997 2.99997 3.17154 2.99997 3.99997V11C2.99997 11.8284 3.67154 12.5 4.49997 12.5H11.5C12.3284 12.5 13 11.8284 13 11V6.49997C13 6.22383 13.2238 5.99997 13.5 5.99997C13.7761 5.99997 14 6.22383 14 6.49997V11C14 12.3807 12.8807 13.5 11.5 13.5H4.49997C3.11926 13.5 1.99997 12.3807 1.99997 11V3.99997C1.99997 2.61926 3.11926 1.49997 4.49997 1.49997H8.99997Z"
-                                                                    fill="currentColor"
-                                                                    fillRule="evenodd"
-                                                                    clipRule="evenodd"
-                                                                />
-                                                            </svg>
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(message.content);
-                                                                toast.success("Copied to clipboard");
-                                                            }}
-                                                            className="h-8 w-8 rounded-r-lg"
-                                                        >
-                                                            <Copy className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                        {message.experimental_attachments && message.experimental_attachments.length > 0 && (
-                                            <AttachmentsBadge attachments={message.experimental_attachments} />
-                                        )}
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {message.role === 'assistant' && (
-                                <>
-                                    {message.parts?.map((part, partIndex) =>
-                                        renderPart(
-                                            part as MessagePart,
-                                            index,
-                                            partIndex,
-                                            message.parts as MessagePart[],
-                                            message,
-                                        )
-                                    )}
-                                    
-                                    {index === memoizedMessages.length - 1 && suggestedQuestions.length > 0 && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 20 }}
-                                            transition={{ duration: 0.5 }}
-                                            className="mt-8"
-                                        >
-                                            <div className="flex items-center gap-2 mb-4">
-                                                <AlignLeft className="w-5 h-5 text-primary" />
-                                                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Suggested Questions</h2>
-                                            </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                {suggestedQuestions.map((question, index) => (
-                                                    <Button
-                                                        key={index}
-                                                        variant="outline"
-                                                        className="justify-start text-left h-auto py-3 px-4 rounded-lg bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-900 dark:text-neutral-100 whitespace-normal"
-                                                        onClick={() => handleSuggestedQuestionClick(question)}
-                                                    >
-                                                        {question}
-                                                    </Button>
-                                                ))}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    ))}
-                </div>
-                <div ref={bottomRef} />
-            </main>
-
+        <Header selectedGroup={selectedGroup} />
+        <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32">
             <AnimatePresence>
-                {(messages.length > 0 || hasSubmitted) && (
+                {status === "ready" && messages.length === 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="mb-12 text-center max-w-3xl mx-auto"
+                    >
+                        <h1 className="text-2xl sm:text-3xl font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+                            Agentic AIDA
+                        </h1>
+                        <p className="text-neutral-600 dark:text-neutral-400 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+                            Powered by UM6P, AIDA uses intelligent agents to streamline operations, enhance research, enrich education, and deliver value to partners.
+                        </p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+    
+            <AnimatePresence>
+                {messages.length === 0 && !hasSubmitted && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
                         transition={{ duration: 0.5 }}
-                        className="fixed bottom-4 left-0 right-0 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 z-50"
+                        className="w-full max-w-3xl mb-12"
                     >
                         <FormComponent
                             input={input}
@@ -1810,14 +1634,217 @@ const HomeContent = () => {
                             lastSubmittedQueryRef={lastSubmittedQueryRef}
                             selectedGroup={selectedGroup}
                             setSelectedGroup={setSelectedGroup}
-                            showExperimentalModels={false}
+                            showExperimentalModels={true}
                             status={status}
                             setHasSubmitted={setHasSubmitted}
                         />
+    
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.5 }}
+                            className="w-full max-w-3xl mt-8"
+                        >
+                            <Suggestions
+                                onValueChange={setInput}
+                                onSuggestion={(suggestion) => {
+                                    setInput(suggestion);
+                                    inputRef.current?.focus();
+                                }}
+                                value={input}
+                                append={append}
+                                setHasSubmitted={setHasSubmitted}
+                            />
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+    
+            <div className="space-y-12 mt-12">
+                {memoizedMessages.map((message, index) => (
+                    <div key={index} className={cn(
+                        message.role === 'assistant' && index < memoizedMessages.length - 1
+                            ? 'pb-12 border-b border-neutral-200 dark:border-neutral-800'
+                            : ''
+                    )}>
+                        {message.role === 'user' && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="mb-8"
+                            >
+                                <div className="group relative">
+                                    {isEditingMessage && editingMessageIndex === index ? (
+                                        <form onSubmit={handleMessageUpdate} className="w-full">
+                                            <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                                                <div className="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800">
+                                                    <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                                                        Edit Message
+                                                    </span>
+                                                    <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => {
+                                                                setIsEditingMessage(false);
+                                                                setEditingMessageIndex(-1);
+                                                                setInput('');
+                                                            }}
+                                                            className="h-8 w-8 rounded-l-lg"
+                                                            disabled={status === 'submitted' || status === 'streaming'}
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            type="submit"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 rounded-r-lg"
+                                                            disabled={status === 'submitted' || status === 'streaming'}
+                                                        >
+                                                            <ArrowRight className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                <div className="p-6">
+                                                    <textarea
+                                                        value={input}
+                                                        onChange={(e) => setInput(e.target.value)}
+                                                        rows={4}
+                                                        className="w-full resize-none rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-4 py-3 text-base text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                        placeholder="Edit your message..."
+                                                    />
+                                                </div>
+                                            </div>
+                                        </form>
+                                    ) : (
+                                        <div className="relative">
+                                            <p className="text-lg font-medium text-neutral-900 dark:text-neutral-100 pr-12">
+                                                {message.content}
+                                            </p>
+                                            {!isEditingMessage && index === lastUserMessageIndex && (
+                                                <div className="absolute right-0 top-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-100 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleMessageEdit(index)}
+                                                        className="h-8 w-8 rounded-l-lg"
+                                                        disabled={status === 'submitted' || status === 'streaming'}
+                                                    >
+                                                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4">
+                                                            <path
+                                                                d="M12.1464 1.14645C12.3417 0.951184 12.6583 0.951184 12.8535 1.14645L14.8535 3.14645C15.0488 3.34171 15.0488 3.65829 14.8535 3.85355L10.9109 7.79618C10.8349 7.87218 10.7471 7.93543 10.651 7.9835L6.72359 9.94721C6.53109 10.0435 6.29861 10.0057 6.14643 9.85355C5.99425 9.70137 5.95652 9.46889 6.05277 9.27639L8.01648 5.34897C8.06455 5.25283 8.1278 5.16507 8.2038 5.08907L12.1464 1.14645ZM12.5 2.20711L8.91091 5.79618L7.87266 7.87267L9.94915 6.83442L13.5382 3.24535L12.5 2.20711ZM8.99997 1.49997C9.27611 1.49997 9.49997 1.72383 9.49997 1.99997C9.49997 2.27611 9.27611 2.49997 8.99997 2.49997H4.49997C3.67154 2.49997 2.99997 3.17154 2.99997 3.99997V11C2.99997 11.8284 3.67154 12.5 4.49997 12.5H11.5C12.3284 12.5 13 11.8284 13 11V6.49997C13 6.22383 13.2238 5.99997 13.5 5.99997C13.7761 5.99997 14 6.22383 14 6.49997V11C14 12.3807 12.8807 13.5 11.5 13.5H4.49997C3.11926 13.5 1.99997 12.3807 1.99997 11V3.99997C1.99997 2.61926 3.11926 1.49997 4.49997 1.49997H8.99997Z"
+                                                                fill="currentColor"
+                                                                fillRule="evenodd"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(message.content);
+                                                            toast.success("Copied to clipboard");
+                                                        }}
+                                                        className="h-8 w-8 rounded-r-lg"
+                                                    >
+                                                        <Copy className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {message.experimental_attachments && message.experimental_attachments.length > 0 && (
+                                        <AttachmentsBadge attachments={message.experimental_attachments} />
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+    
+                        {message.role === 'assistant' && (
+                            <>
+                                {message.parts?.map((part, partIndex) =>
+                                    renderPart(
+                                        part as MessagePart,
+                                        index,
+                                        partIndex,
+                                        message.parts as MessagePart[],
+                                        message,
+                                    )
+                                )}
+                                
+                                {index === memoizedMessages.length - 1 && suggestedQuestions.length > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 20 }}
+                                        transition={{ duration: 0.5 }}
+                                        className="mt-12"
+                                    >
+                                        <div className="flex items-center gap-2 mb-6">
+                                            <AlignLeft className="w-5 h-5 text-primary" />
+                                            <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Suggested Questions</h2>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {suggestedQuestions.map((question, index) => (
+                                                <Button
+                                                    key={index}
+                                                    variant="outline"
+                                                    className="justify-start text-left h-auto py-4 px-5 rounded-lg bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-900 dark:text-neutral-100 whitespace-normal"
+                                                    onClick={() => handleSuggestedQuestionClick(question)}
+                                                >
+                                                    {question}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </>
+                        )}
+                    </div>
+                ))}
+            </div>
+            <div ref={bottomRef} />
+        </main>
+    
+        <AnimatePresence>
+            {(messages.length > 0 || hasSubmitted) && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.5 }}
+                    className="fixed bottom-6 left-0 right-0 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 z-50"
+                >
+                    <FormComponent
+                        input={input}
+                        setInput={setInput}
+                        attachments={attachments}
+                        setAttachments={setAttachments}
+                        handleSubmit={handleSubmit}
+                        fileInputRef={fileInputRef}
+                        inputRef={inputRef}
+                        stop={stop}
+                        messages={messages as any}
+                        append={append}
+                        selectedModel={selectedModel}
+                        setSelectedModel={handleModelChange}
+                        resetSuggestedQuestions={resetSuggestedQuestions}
+                        lastSubmittedQueryRef={lastSubmittedQueryRef}
+                        selectedGroup={selectedGroup}
+                        setSelectedGroup={setSelectedGroup}
+                        showExperimentalModels={false}
+                        status={status}
+                        setHasSubmitted={setHasSubmitted}
+                    />
+                </motion.div>
+            )}
+        </AnimatePresence>
+    </div>
     );
 }
 

@@ -15,7 +15,7 @@ import { FileList } from "./file-list"
 import { PromptSystem } from "./prompt-system"
 import { SelectModel } from "./select-model"
 
-type ChatInputProps = {
+interface ChatInputProps {
   value: string
   onValueChange: (value: string) => void
   onSend: () => void
@@ -42,45 +42,39 @@ export function ChatInput({
   value,
   onValueChange,
   onSend,
-  isSubmitting,
+  isSubmitting = false,
   files,
   onFileUpload,
   onFileRemove,
   onSuggestion,
-  hasSuggestions,
+  hasSuggestions = false,
   onSelectModel,
   selectedModel,
   isUserAuthenticated,
   onSelectSystemPrompt,
   stop,
-  status,
+  status = "ready",
   setSelectedAgentId,
   selectedAgentId,
-  placeholder,
+  placeholder = `Message ${APP_NAME}...`,
 }: ChatInputProps) {
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (isSubmitting) {
-        e.preventDefault()
-        return
-      }
-
-      if (e.key === "Enter" && status === "streaming") {
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (isSubmitting || status === "streaming") {
         e.preventDefault()
         return
       }
 
       if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault()
         onSend()
       }
     },
-    [onSend, isSubmitting]
+    [onSend, isSubmitting, status]
   )
 
   const handleMainClick = () => {
-    if (isSubmitting) {
-      return
-    }
+    if (isSubmitting) return
 
     if (status === "streaming") {
       stop()
@@ -102,9 +96,9 @@ export function ChatInput({
           selectedAgentId={selectedAgentId}
         />
       )}
-      <div className="relative order-2 px-2 pb-3 sm:pb-4 md:order-1">
+      <div className="relative order-2 px-3 pb-4 sm:pb-6 md:order-1">
         <PromptInput
-          className="border-input bg-popover relative z-10 overflow-hidden border p-0 pb-2 shadow-xs backdrop-blur-xl"
+          className="border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 relative z-10 overflow-hidden border rounded-xl p-0 pb-3 shadow-sm"
           maxHeight={200}
           value={value}
           onValueChange={onValueChange}
@@ -113,9 +107,9 @@ export function ChatInput({
           <PromptInputTextarea
             placeholder={placeholder}
             onKeyDown={handleKeyDown}
-            className="mt-2 ml-2 min-h-[44px] text-base leading-[1.3] sm:text-base md:text-base"
+            className="mt-3 ml-3 min-h-[48px] text-base leading-relaxed sm:text-base md:text-base text-neutral-900 dark:text-neutral-100"
           />
-          <PromptInputActions className="mt-5 w-full justify-between px-2">
+          <PromptInputActions className="mt-4 w-full justify-between px-3">
             <div className="flex gap-2">
               <ButtonFileUpload
                 onFileUpload={onFileUpload}
@@ -133,16 +127,16 @@ export function ChatInput({
             >
               <Button
                 size="sm"
-                className="size-9 rounded-full transition-all duration-300 ease-out"
+                className="size-10 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-900 dark:text-neutral-100 transition-colors duration-200"
                 disabled={!value || isSubmitting}
                 type="button"
                 onClick={handleMainClick}
                 aria-label={status === "streaming" ? "Stop" : "Send message"}
               >
                 {status === "streaming" ? (
-                  <Stop className="size-4" />
+                  <Stop className="size-5" />
                 ) : (
-                  <ArrowUp className="size-4" />
+                  <ArrowUp className="size-5" />
                 )}
               </Button>
             </PromptInputAction>
