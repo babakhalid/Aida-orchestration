@@ -1,19 +1,18 @@
-import { useUser } from "@/providers/user-provider"
-import { AgentSummary } from "@/app/types/agent"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
-import { cn } from "@/lib/utils"
-import { User } from "@phosphor-icons/react"
+import { AgentSummary } from "@/app/types/agent";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { User } from "@phosphor-icons/react";
 
 type AgentCardProps = {
-  id: string
-  name: string
-  description: string
-  avatar_url?: string | null
-  creator_id: string
-  className?: string
-  isAvailable: boolean
-  onClick?: () => void
-}
+  id: string;
+  name: string;
+  description: string;
+  avatar_url?: string | null;
+  creator_id: string;
+  className?: string;
+  isAvailable: boolean;
+  onClick?: () => void;
+};
 
 export function AgentCard({
   name,
@@ -25,13 +24,12 @@ export function AgentCard({
   onClick,
 }: AgentCardProps) {
   return (
-    <button
+    <div
       className={cn(
         "bg-secondary hover:bg-accent cursor-pointer rounded-xl p-4 transition-colors",
         className,
         !isAvailable && "cursor-not-allowed opacity-50"
       )}
-      type="button"
       onClick={() => isAvailable && onClick?.()}
     >
       <div className="flex items-center space-x-4">
@@ -55,14 +53,12 @@ export function AgentCard({
           <h3 className="text-foreground truncate text-base font-medium">
             {name}
           </h3>
-
           <p className="text-foreground mt-1 line-clamp-3 text-sm md:line-clamp-2">
             {description}
           </p>
-
           <p className="text-muted-foreground mt-2 text-xs">By {creator_id}</p>
         </div>
       </div>
-    </button>
-  )
+    </div>
+  );
 }

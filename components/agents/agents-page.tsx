@@ -1,7 +1,7 @@
 "use client";
 
 import { AgentSummary } from "@/app/types/agent";
-import { AIDA_AGENTS_SLUGS, AIDA_COMING_SOON_AGENTS, AIDA_SPECIAL_AGENTS_SLUGS } from "@/lib/config"; // Updated imports
+import { AIDA_AGENTS_SLUGS, AIDA_COMING_SOON_AGENTS, AIDA_SPECIAL_AGENTS_SLUGS } from "@/lib/config";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import { useMemo, useState } from "react";
 import { DialogAgent } from "./dialog-agent";
@@ -24,7 +24,7 @@ export function AgentsPage({ agents }: AgentsPageProps) {
     setOpenAgentId(agentId);
   };
 
-  const researchAgent = agents.find((agent) => agent.slug === "aida-advanced-research"); // Updated slug
+  const researchAgent = agents.find((agent) => agent.slug === "aida-advanced-research");
   const featuredAgents = agents.filter((agent) =>
     AIDA_AGENTS_SLUGS.includes(agent.slug)
   );
@@ -55,7 +55,7 @@ export function AgentsPage({ agents }: AgentsPageProps) {
               description={researchAgent.description}
               avatar_url={researchAgent.avatar_url}
               example_inputs={researchAgent.example_inputs || []}
-              creator_id={researchAgent.creator_id || "AIDA"} // Updated to AIDA
+              creator_id={researchAgent.creator_id || "AIDA"}
               isAvailable={true}
               agents={agents}
               onAgentClick={handleAgentClick}
@@ -65,21 +65,16 @@ export function AgentsPage({ agents }: AgentsPageProps) {
               }
               randomAgents={randomAgents}
               trigger={
-                <button
-                  className="group w-full items-end justify-start"
-                  type="button"
-                >
+                <div className="group w-full items-end justify-start cursor-pointer">
                   <div className="relative min-h-[140px] w-full overflow-hidden rounded-2xl shadow-lg md:aspect-[4/1]">
                     <div className="absolute inset-0">
                       <img
-                        src="/banner_library.jpg" // Updated to a university-themed image
+                        src="/banner_library.jpg"
                         alt="Library background"
                         className="h-full w-full object-cover transition-all duration-300 group-hover:scale-105"
                       />
                     </div>
-
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent dark:from-black/70 dark:via-black/20" />
-
                     <div className="relative flex h-full min-h-[140px] flex-col p-5">
                       <div className="mt-auto flex flex-row items-end justify-between gap-2">
                         <div className="flex flex-col items-start gap-0.5 text-left">
@@ -96,7 +91,7 @@ export function AgentsPage({ agents }: AgentsPageProps) {
                       </div>
                     </div>
                   </div>
-                </button>
+                </div>
               }
             />
           </div>
@@ -114,7 +109,7 @@ export function AgentsPage({ agents }: AgentsPageProps) {
                 description={agent.description}
                 avatar_url={agent.avatar_url}
                 example_inputs={agent.example_inputs || []}
-                creator_id={agent.creator_id || "AIDA"} // Updated to AIDA
+                creator_id={agent.creator_id || "AIDA"}
                 isAvailable={true}
                 agents={agents}
                 onAgentClick={handleAgentClick}
@@ -137,7 +132,7 @@ export function AgentsPage({ agents }: AgentsPageProps) {
                 description={agent.description}
                 avatar_url={agent?.avatar_url}
                 example_inputs={agent.example_inputs || []}
-                creator_id={agent.creator_id || "AIDA"} // Updated to AIDA
+                creator_id={agent.creator_id || "AIDA"}
                 slug={agent.slug}
                 isAvailable={false}
                 agents={agents}

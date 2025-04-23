@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import { useUser } from "@/providers/user-provider"
-import { AgentSummary } from "@/app/types/agent"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { useUser } from "@/providers/user-provider";
+import { AgentSummary } from "@/app/types/agent";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { useChats } from "@/lib/chat-store/chats/provider"
-import { MODEL_DEFAULT } from "@/lib/config"
-import { cn } from "@/lib/utils"
-import { ChatCircle, Check, CopySimple, User } from "@phosphor-icons/react"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+} from "@/components/ui/tooltip";
+import { useChats } from "@/lib/chat-store/chats/provider";
+import { MODEL_DEFAULT } from "@/lib/config";
+import { cn } from "@/lib/utils";
+import { ChatCircle, Check, CopySimple, User } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type AgentDetailProps = {
-  id: string
-  slug: string
-  name: string
-  description: string
-  example_inputs: string[]
-  creator_id: string
-  avatar_url?: string | null
-  onAgentClick?: (agentId: string) => void
-  randomAgents: AgentSummary[]
-  isFullPage?: boolean
-  isMobile?: boolean
-}
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  example_inputs: string[];
+  creator_id: string;
+  avatar_url?: string | null;
+  onAgentClick?: (agentId: string) => void;
+  randomAgents: AgentSummary[];
+  isFullPage?: boolean;
+  isMobile?: boolean;
+};
 
 export function AgentDetail({
   id,
@@ -43,20 +43,19 @@ export function AgentDetail({
   isFullPage,
   isMobile,
 }: AgentDetailProps) {
-  const [copied, setCopied] = useState(false)
-  const router = useRouter()
-  const { user } = useUser()
-
-  const { createNewChat } = useChats()
+  const [copied, setCopied] = useState(false);
+  const router = useRouter();
+  const { user } = useUser();
+  const { createNewChat } = useChats();
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/agents/${slug}`)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1000)
-  }
+    navigator.clipboard.writeText(`${window.location.origin}/agents/${slug}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  };
 
   const createNewChatWithAgent = async (prompt?: string) => {
-    if (!user) return
+    if (!user) return;
 
     try {
       const newChat = await createNewChat(
@@ -64,35 +63,35 @@ export function AgentDetail({
         `Conversation with ${name}`,
         user?.preferred_model || MODEL_DEFAULT,
         true,
-        undefined, // No need to specify system prompt as it will be fetched from the agent
+        undefined,
         id
-      )
+      );
 
       if (newChat) {
         router.push(
           `/c/${newChat.id}${prompt ? `?prompt=${encodeURIComponent(prompt)}` : ""}`
-        )
+        );
       }
     } catch (error) {
-      console.error("Failed to create chat with agent:", error)
+      console.error("Failed to create chat with agent:", error);
     }
-  }
+  };
 
   useEffect(() => {
     if (randomAgents.length > 0 && isFullPage) {
       randomAgents.forEach((agent) => {
-        router.prefetch(`/agents/${agent.slug}`)
-      })
+        router.prefetch(`/agents/${agent.slug}`);
+      });
     }
-  }, [randomAgents, router, isFullPage])
+  }, [randomAgents, router, isFullPage]);
 
   const handleAgentClick = (agent: AgentSummary) => {
     if (onAgentClick) {
-      onAgentClick(agent.id)
+      onAgentClick(agent.id);
     } else {
-      router.push(`/agents/${agent.slug}`)
+      router.push(`/agents/${agent.slug}`);
     }
-  }
+  };
 
   return (
     <div className="bg-background relative overflow-x-hidden overflow-y-auto pb-16">
@@ -128,7 +127,7 @@ export function AgentDetail({
               variant="outline"
               size="sm"
               onClick={() => {
-                createNewChatWithAgent(example_input)
+                createNewChatWithAgent(example_input);
               }}
             >
               {example_input}
@@ -223,5 +222,5 @@ export function AgentDetail({
         </Button>
       </div>
     </div>
-  )
+  );
 }

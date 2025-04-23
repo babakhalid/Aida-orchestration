@@ -1,35 +1,35 @@
-import { AgentDetail } from "@/components/agents/agent-detail"
-import LayoutApp from "@/components/layout/layout-app"
-import { MessagesProvider } from "@/lib/chat-store/messages/provider"
-import { createClient } from "@/lib/supabase/server"
+import { AgentDetail } from "@/components/agents/agent-detail";
+import LayoutApp from "@/components/layout/layout-app";
+import { MessagesProvider } from "@/lib/chat-store/messages/provider";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function AgentIdPage({
   params,
 }: {
-  params: Promise<{ agentSlug: string }>
+  params: Promise<{ agentSlug: string }>;
 }) {
-  const { agentSlug } = await params
-  const supabase = await createClient()
+  const { agentSlug } = await params;
+  const supabase = await createClient();
 
   const { data: agent, error } = await supabase
     .from("agents")
     .select("*")
     .eq("slug", agentSlug)
-    .single()
+    .single();
 
   if (error) {
-    console.error("Error fetching agent", error)
-    return <div>Error: {error.message}</div>
+    console.error("Error fetching agent", error);
+    return <div>Error: {error.message}</div>;
   }
 
   const { data: agents, error: agentsError } = await supabase
     .from("agents")
     .select("*")
     .not("slug", "eq", agentSlug)
-    .limit(4)
+    .limit(4);
 
   if (agentsError) {
-    console.error("Error fetching agents", agentsError)
+    console.error("Error fetching agents", agentsError);
   }
 
   return (
@@ -50,5 +50,5 @@ export default async function AgentIdPage({
         </div>
       </LayoutApp>
     </MessagesProvider>
-  )
+  );
 }
