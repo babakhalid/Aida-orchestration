@@ -151,7 +151,8 @@ const groupTools = {
     'web_search',       // For general info, finding resources
     'academic_search',  // For scholarly articles, research
     'retrieve',         // For specific documents or web pages
-    'youtube_search'    // For finding educational videos
+    'youtube_search',
+    'text_translate',    // For finding educational videos
   ] as const,
   operations: [
     'web_search',       // For general info about systems like SAP, best practices
