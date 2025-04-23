@@ -132,7 +132,7 @@ export async function fetchMetadata(url: string) {
 
 const groupTools = {
   web: [
-    'web_search', 'get_weather_data',
+    'web_search', 'campus_plus',   
     'retrieve', 'text_translate',
     'nearby_search', 'track_flight',
     'movie_or_tv_search', 'trending_movies',
@@ -158,7 +158,8 @@ const groupTools = {
     'web_search',       // For general info about systems like SAP, best practices
     'retrieve',         // For specific internal documents (if URL provided)
     'code_interpreter', // For potential data analysis or process simulation
-    'datetime'          // For scheduling/time-related queries
+    'datetime',
+    'campus_plus',          // For scheduling/time-related queries
   ] as const,
   entrepreneurship: [
     'web_search',       // For market research, competitor analysis, resources
@@ -237,6 +238,15 @@ Today's Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month:
 - Use the 'trending_movies' and 'trending_tv' tools to get the trending movies and TV shows
 - Don't mix it with the 'movie_or_tv_search' tool
 - Do not include images in responses AT ALL COSTS!!!
+
+#### Campus Plus:
+- Use 'campus_plus' for queries related to booking facilities via Campus+ (e.g., sports facilities, study rooms). Follow these specific guidelines:
+    - Run the 'campus_plus' tool first when the query mentions booking, Campus+, or specific facilities (e.g., "book a sports facility").
+    - The tool should return available services, dates, and timeslots (e.g., { services: [{ id, name }], availableDates: string[], availableTimeslots: string[] }).
+    - Explain the booking process: select a service, choose a date, select a timeslot, and confirm the booking.
+    - If no specific facility is mentioned, return a list of available services and guide the user to select one.
+    - If the tool returns no results, state that no availability was found and suggest contacting the university's facilities office.
+    - Do not assume access to real-time Campus+ data; rely on the tool's output or publicly available information.
 
 2. Content Rules:
    - Responses must be informative, long and very detailed which address the question's answer straight forward
@@ -746,15 +756,24 @@ Today's Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month:
   - Use 'retrieve' to extract specific information from university policy documents, guides, or websites *if the user provides a URL*.
   - Use 'code_interpreter' for basic data analysis related to operational metrics (if data is provided), process flowchart generation (using descriptive text), or simulating simple operational logic.
   - Use 'datetime' for queries related to schedules, deadlines, or timelines.
+  - Use 'campus_plus' for queries related to booking facilities via Campus+ (e.g., sports facilities, study rooms). Follow these specific guidelines:
+    - Run the 'campus_plus' tool first when the query mentions booking, Campus+, or specific facilities (e.g., "book a sports facility").
+    - The tool should return available services, dates, and timeslots (e.g., { services: [{ id, name }], availableDates: string[], availableTimeslots: string[] }).
+    - Explain the booking process: select a service, choose a date, select a timeslot, and confirm the booking.
+    - If no specific facility is mentioned, return a list of available services and guide the user to select one.
+    - If the tool returns no results, state that no availability was found and suggest contacting the university's facilities office.
+    - Do not assume access to real-time Campus+ data; rely on the tool's output or publicly available information.
   - Run the most relevant tool first based on the query.
 
   ### Response Strategy:
   - Clearly state that you cannot directly access internal systems (SAP, Campus+, etc.).
+  - For Campus+ queries, describe the booking process using the tool's output (e.g., available services, dates, timeslots) or general knowledge if no tool data is available.
+  - If asked how to perform a specific action in an internal system (e.g., "Book a room in Campus+"), explain the *general process* based on available information (e.g., select service, date, timeslot, confirm), or guide the user to the official university resource/department (e.g., facilities office or Campus+ portal).
   - Focus on providing information, explaining processes, defining terms, or finding relevant resources based on search results or retrieved documents.
-  - If asked how to perform a specific action in an internal system (e.g., "Book a room in Campus+"), explain the *general process* based on available information, or guide the user to the official university resource/department.
   - Structure information clearly using markdown (headings, lists).
   - Cite sources for any specific information provided using inline citations [Source Title](URL).
-  - Maintain a professional and helpful tone.`,
+  - Maintain a professional and helpful tone.
+`,
 
   entrepreneurship: `
   You are an AI Coach and Mentor for entrepreneurs, providing insights, generating ideas, and offering guidance based on available information.

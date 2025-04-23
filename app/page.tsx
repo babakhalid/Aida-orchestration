@@ -117,6 +117,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import MCPServerList from '@/components/mcp-server-list';
 import { Header } from '@/components/layout/header';
 import { Suggestions } from '@/components/chat-input/suggestions';
+import CampusPlus from '@/components/campus-plus';
 
 
 export const maxDuration = 120;
@@ -1989,6 +1990,23 @@ const ToolInvocationListView = memo(
                                 })}
                             </div>
                         </Card>
+                    );
+                }
+
+                if (toolInvocation.toolName === 'campus_plus') {
+                    if (!result) {
+                        return (
+                            <SearchLoadingState
+                                icon={Calendar}
+                                text="Loading Campus+ booking options..."
+                                color="blue"
+                            />
+                        );
+                    }
+                    return (
+                        <div className="my-4">
+                            <CampusPlus result={result} />
+                        </div>
                     );
                 }
 

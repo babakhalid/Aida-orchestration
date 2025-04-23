@@ -368,6 +368,7 @@ export const SUGGESTIONS = [
     highlight: "Manage",
     prompt: "Manage",
     items: [
+      "Manage a booking for a facility via Campus+",
       "Manage an email draft for a staff meeting request",
       "Manage a summary of campus event policies",
       "Manage a checklist for organizing a university event",

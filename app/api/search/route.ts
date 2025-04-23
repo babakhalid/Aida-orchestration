@@ -23,6 +23,7 @@ import {
 import Exa from 'exa-js';
 import { z } from 'zod';
 import MemoryClient from 'mem0ai';
+import { format, addDays } from 'date-fns';
 
 // Add currency symbol mapping at the top of the file
 const CURRENCY_SYMBOLS = {
@@ -1853,6 +1854,41 @@ plt.show()`
                             }
                         },
                     }),
+
+                    campus_plus: tool({
+                        description: 'Retrieve available services, dates, and timeslots for Campus+ booking.',
+                        parameters: z.object({
+                          facility: z.string().optional().describe('Optional specific facility to book (e.g., "sports", "study").'),
+                        }),
+                        execute: async ({ facility }: { facility?: string }) => {
+                          const dates = Array.from({ length: 7 }, (_, i) =>
+                            format(addDays(new Date(), i), 'yyyy-MM-dd')
+                          );
+                          const timeslots = [
+                            '09:00 - 10:00',
+                            '10:00 - 11:00',
+                            '11:00 - 12:00',
+                            '13:00 - 14:00',
+                            '14:00 - 15:00',
+                            '15:00 - 16:00',
+                          ];
+                          const services = [
+                            { id: 'sports', name: 'Sports Facility' },
+                            { id: 'study', name: 'Study Room' },
+                          ];
+                          return facility
+                            ? {
+                                services: services.filter(s => s.id === facility),
+                                availableDates: dates,
+                                availableTimeslots: timeslots,
+                              }
+                            : {
+                                services,
+                                availableDates: dates,
+                                availableTimeslots: timeslots,
+                              };
+                        },
+                      }),
                     reason_search: tool({
                         description: 'Perform a reasoned web search with multiple steps and sources.',
                         parameters: z.object({
