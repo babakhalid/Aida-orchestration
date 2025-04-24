@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import 'katex/dist/katex.min.css';
+
 import { BorderTrail } from '@/components/core/border-trail';
 import { TextShimmer } from '@/components/core/text-shimmer';
 import { FlightTracker } from '@/components/flight-tracker';
@@ -118,6 +119,16 @@ import MCPServerList from '@/components/mcp-server-list';
 import { Header } from '@/components/layout/header';
 import { Suggestions } from '@/components/chat-input/suggestions';
 import CampusPlus from '@/components/campus-plus';
+
+
+
+import { useChats } from '@/lib/chat-store/chats/provider'; // *** Use your Chats Provider hook ***
+import { useMessages } from '@/lib/chat-store/messages/provider'; // *** Use your Messages Provider hook ***
+import { useChatSession } from '@/providers/chat-session-provider'; // *** Use your Chat 
+// --- AI SDK Imports ---
+import { Message, CreateMessage } from '@ai-sdk/react'; // Added CreateMessage``
+import { useRouter } from 'next/navigation';
+import { AppProviders } from '@/providers/AppProviders';
 
 
 export const maxDuration = 120;
@@ -650,10 +661,48 @@ const HomeContent = () => {
     const [hasManuallyScrolled, setHasManuallyScrolled] = useState(false);
     const isAutoScrollingRef = useRef(false);
 
+    
+    const [isLoadingChat, setIsLoadingChat] = useState(false); // Local loading state during chat creation/init append
+    const router = useRouter();
+    const { chatId: currentChatId } = useChatSession(); // Get chatId from session provider (reads from URL)
+    const { createNewChat, getChatById, isLoading: isChatsLoading } = useChats(); // Get chat functions/state
+    const {
+        messages: messagesFromProvider,
+        addMessage: addMessageToStore, // Saves to DB + Cache
+        cacheAndAddMessage,           // Saves to Cache only for optimistic UI
+        setMessages: setMessagesInProvider, // Use this to sync useChat state
+        resetMessages,
+    } = useMessages();
     const userId = useMemo(() => getUserId(), []);
+    
 
+    const resetSuggestedQuestions = useCallback(() => {
+        setSuggestedQuestions([]);
+    }, []);
+
+     // --- Effect to set initial model based on loaded chat ---
+     useEffect(() => {
+        if (currentChatId) {
+            const chatDetails = getChatById(currentChatId);
+            if (chatDetails?.model && chatDetails.model !== selectedModel) {
+                 setSelectedModel(chatDetails.model);
+                 console.log("Model set from loaded chat:", chatDetails.model);
+            }
+        }
+        // Reset model if navigating away from a specific chat to '/'
+        else if (!currentChatId && selectedModel !== model) {
+            setSelectedModel(model); // Reset to default/param
+            console.log("Model reset to default");
+        }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+     }, [currentChatId, getChatById, model]); // Removed selectedModel to prevent loop
+
+    // --- useChat Hook Setup ---
     const chatOptions: UseChatOptions = useMemo(() => ({
         api: '/api/search',
+        id: currentChatId ?? undefined,
+        // Initialize with messages from the provider
+        initialMessages: messagesFromProvider,
         experimental_throttle: 500,
         maxSteps: 5,
         body: {
@@ -661,16 +710,38 @@ const HomeContent = () => {
             group: selectedGroup,
             user_id: userId,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            chatId: currentChatId,
         },
+        // --- onFinish: Save Assistant Message using Provider ---
         onFinish: async (message, { finishReason }) => {
-            if (message.content && (finishReason === 'stop' || finishReason === 'length')) {
-                const newHistory = [
-                    { role: "user", content: lastSubmittedQueryRef.current },
-                    { role: "assistant", content: message.content },
-                ];
-                const { questions } = await suggestQuestions(newHistory);
-                setSuggestedQuestions(questions);
+             if (currentChatId && message.role === 'assistant') {
+                try {
+                    // Use the provider's function that saves to DB & Cache
+                    await addMessageToStore(message);
+                    console.log("Assistant message saved:", message.content?.substring(0, 50) + "...");
+                } catch (error) {
+                    console.error("Failed to save assistant message via provider:", error);
+                    toast.error("Error saving response.");
+                }
             }
+            // Suggest Questions Logic (Keep as is)
+             if (message.content && (finishReason === 'stop' || finishReason === 'length')) {
+               const lastUserMsg = messagesFromProvider.findLast(m => m.role === 'user'); // Use provider messages
+               if (lastUserMsg) {
+                   const historyForSuggestions = [
+                       { role: "user", content: lastUserMsg.content },
+                       { role: "assistant", content: message.content },
+                   ];
+                   try {
+                      const { questions } = await suggestQuestions(historyForSuggestions);
+                      setSuggestedQuestions(questions);
+                   } catch (e) {
+                       console.error("Error suggesting questions:", e);
+                   }
+               } else {
+                   console.warn("Could not find last user message for suggestions.");
+               }
+           }
         },
         onError: (error) => {
             console.error("Chat error:", error.cause, error.message);
@@ -678,19 +749,277 @@ const HomeContent = () => {
                 description: `Oops! An error occurred while processing your request. ${error.message}`,
             });
         },
-    }), [selectedModel, selectedGroup, userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }), [
+        selectedModel, selectedGroup, userId, currentChatId,
+        messagesFromProvider, // Depend on provider's messages for init
+        addMessageToStore // Depend on the store function
+    ]);
 
     const {
         input,
-        messages,
         setInput,
         append,
-        handleSubmit,
-        setMessages,
         reload,
         stop,
         status,
+        messages,
+        handleSubmit,
+        setMessages,
+        // We primarily use messagesFromProvider for rendering the list
+        // messages: messagesFromUseChat, // Use if needed for specific hook interactions
+        setMessages: setMessagesInUseChat, // Hook's internal state setter
     } = useChat(chatOptions);
+
+    // --- Effect to sync provider messages to useChat state ---
+    // Keeps useChat hook's internal state aligned with the provider's state
+    useEffect(() => {
+        if (messagesFromProvider) {
+             setMessagesInUseChat(messagesFromProvider);
+        }
+    }, [messagesFromProvider, setMessagesInUseChat]);
+
+    // --- Modified Handle Submit using Providers ---
+    const handleFormSubmit = useCallback(async (
+        event?: React.FormEvent<HTMLFormElement>,
+        options?: { initialContent?: string; initialAttachments?: Attachment[] }
+    ) => {
+        event?.preventDefault();
+        const isProgrammaticCall = !!options; // Check if called with options
+
+        // Prevent manual submission if not ready, but allow programmatic
+        if (status !== 'ready' && !isProgrammaticCall) {
+             toast.info("Please wait for the current response to complete.");
+             return;
+        }
+
+        const messageContent = options?.initialContent ?? input.trim();
+        const currentAttachments = options?.initialAttachments ?? attachments;
+
+        if (!messageContent && currentAttachments.length === 0) {
+            toast.error("Please enter a message or add an attachment.");
+            return;
+        }
+
+        let chatIdToUse = currentChatId;
+
+        // 1. Create Chat if it's new
+        if (!chatIdToUse && userId) {
+            setIsLoadingChat(true); // Indicate loading
+            try {
+                const newChat = await createNewChat(
+                    userId,
+                    messageContent.substring(0, 50) || "Chat with Attachments",
+                    selectedModel,
+                    true, // isAuthenticated
+                    undefined, // systemPrompt
+                    undefined // agentId
+                );
+
+                if (newChat?.id) {
+                    chatIdToUse = newChat.id;
+                    // IMPORTANT: Navigate to the new chat URL. ChatSessionProvider will update.
+                    router.push(`/c/${chatIdToUse}`, { scroll: false });
+                    console.log("New chat created via provider, navigating to:", chatIdToUse);
+                    // Note: currentChatId state will update automatically via ChatSessionProvider
+                } else {
+                    toast.error("Failed to create a new chat session.");
+                     setIsLoadingChat(false);
+                    return;
+                }
+            } catch (error) {
+                console.error("Error creating chat via provider:", error);
+                toast.error("Error starting chat.");
+                 setIsLoadingChat(false);
+                return;
+            } finally {
+                // Intentionally *not* setting loading false here,
+                // let the navigation and subsequent provider updates handle UI state.
+            }
+        }
+
+        // Ensure we have a chat ID before proceeding
+        if (!chatIdToUse) {
+            // This might happen briefly during navigation after creation, add a small delay/retry or handle state better
+            console.error("Chat ID is still missing after creation attempt.");
+            toast.error("Could not send message. Chat session initializing...");
+            setIsLoadingChat(false); // Ensure loading is off if we bail here
+            return;
+        }
+
+
+        // 2. Prepare User Message for AI SDK and Optimistic UI
+        // Note: The provider's `addMessage` expects an AI SDK Message,
+        // but `append` can take `CreateMessage` (no id needed).
+        const userMessageForAppend: CreateMessage = {
+             role: 'user',
+             content: messageContent,
+             createdAt: new Date(), // Optional for CreateMessage
+             experimental_attachments: currentAttachments.length > 0 ? currentAttachments : undefined,
+        };
+
+        // Create a full Message object for the optimistic update
+        const userMessageForCache: Message = {
+            ...userMessageForAppend,
+            id: crypto.randomUUID(), // Temporary ID for UI key
+            createdAt: new Date(), // Ensure createdAt is set
+        };
+
+
+        // 3. Optimistic UI Update (using cacheAndAddMessage)
+        try {
+             await cacheAndAddMessage(userMessageForCache);
+             console.log("User message added to cache optimistically.");
+             // Clear form state *after* successful optimistic update
+             setInput('');
+             setAttachments([]);
+             lastSubmittedQueryRef.current = messageContent;
+             resetSuggestedQuestions();
+             setHasSubmitted(true);
+             setIsLoadingChat(false); // Definitively turn off loading after submit actions
+
+        } catch(cacheError) {
+             console.error("Failed to cache user message:", cacheError);
+             // Decide if you want to proceed without optimistic update or show error
+             toast.error("Error preparing message.");
+             setIsLoadingChat(false);
+             return; // Don't proceed if caching fails critically
+        }
+
+
+        // 4. Call AI SDK's append function
+        try {
+            // Pass the CreateMessage object (or the full Message object, append handles both)
+            await append(userMessageForAppend, {
+                 data: { chatId: chatIdToUse } // Pass chat ID if backend needs it
+            });
+            console.log("Message appended to useChat for processing.");
+
+            // Optional: After successful append/response, trigger background DB save if needed
+            // If cacheAndAddMessage doesn't guarantee DB save, call addMessageToStore here
+            // await addMessageToStore(userMessageForCache); // Ensure DB save
+
+        } catch (error) {
+            console.error("Error sending message via useChat append:", error);
+            toast.error("Failed to send message.");
+            // Consider removing the optimistically added message if append fails
+            // setMessagesInProvider(prev => prev.filter(m => m.id !== userMessageForCache.id));
+        }
+
+    }, [
+        status, input, attachments, currentChatId, userId, createNewChat,
+        selectedModel, router, cacheAndAddMessage, setInput, setAttachments,
+        lastSubmittedQueryRef, resetSuggestedQuestions, setHasSubmitted, append, // Include append
+        // addMessageToStore // Add if needed for explicit DB save after append
+    ]);
+
+    // --- Effect for Initial Query Append ---
+     useEffect(() => {
+        const initialQuery = query || q;
+        // Check if query exists, it's the first load, it's the root path (no chat id),
+        // provider has no messages yet, and we have a user ID.
+        if (!initializedRef.current && initialQuery && !currentChatId && messagesFromProvider.length === 0 && userId) {
+            initializedRef.current = true;
+            console.log("Appending initial query:", initialQuery);
+            setIsLoadingChat(true); // Show loading for initial query processing
+             // Trigger the submit handler to create chat and send message
+             handleFormSubmit(undefined, { initialContent: initialQuery, initialAttachments: [] })
+                .catch(err => {
+                    console.error("Initial query submit failed:", err);
+                    toast.error("Failed to process initial query.");
+                })
+                // No finally setIsLoadingChat(false) here, let the submit handler manage it
+        }
+    }, [query, q, currentChatId, messagesFromProvider.length, userId, handleFormSubmit]);
+
+
+    const lastUserMessageIndex = useMemo(() => {
+        for (let i = messagesFromProvider.length - 1; i >= 0; i--) {
+            if (messagesFromProvider[i].role === 'user') {
+                return i;
+            }
+        }
+        return -1;
+    }, [messagesFromProvider]);
+
+
+    // --- Handle Message Edit/Update (Keep as is, uses local state and setMessages) ---
+    const handleMessageEdit = useCallback((index: number) => {
+        // Ensure index is valid for the provider's messages
+        if (index < 0 || index >= messagesFromProvider.length || messagesFromProvider[index].role !== 'user') {
+            console.error("Invalid index or message type for editing.");
+            return;
+        }
+        setIsEditingMessage(true);
+        setEditingMessageIndex(index);
+        setInput(messagesFromProvider[index].content);
+     }, [messagesFromProvider]); // Depend on provider messages
+
+
+    const handleMessageUpdate = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!currentChatId) {
+            toast.error("Cannot edit message, chat session not active.");
+            return;
+        }
+        if (input.trim() && editingMessageIndex !== -1) {
+            const messagesBeforeEdit = messagesFromProvider.slice(0, editingMessageIndex);
+            // Create the edited user message
+            const editedUserMessage: Message = {
+                ...messagesFromProvider[editingMessageIndex], // Copy original data like ID, attachments
+                content: input.trim(),
+                createdAt: new Date(), // Update timestamp?
+            };
+
+            // Optimistically update the provider's state
+            setMessagesInProvider([...messagesBeforeEdit, editedUserMessage]);
+
+            // Clear editing state
+            const editedContent = input.trim();
+            lastSubmittedQueryRef.current = editedContent;
+            setInput('');
+            setAttachments([]); // Clear any temporary attachments from form
+            setIsEditingMessage(false);
+            setEditingMessageIndex(-1);
+
+            // Trigger reload with the *new* history from the provider state
+            // NOTE: The Vercel SDK's reload might not directly use the provider state.
+            // We need to manually reconstruct the history up to the edited point
+            // and then append the edited message + trigger a new generation.
+            console.log("Reloading chat from edited message...");
+            setMessagesInUseChat([...messagesBeforeEdit, editedUserMessage]); // Update useChat state
+
+            // Trigger the AI call using append with the modified message
+            append(editedUserMessage, { data: { chatId: currentChatId } })
+                .then(() => {
+                    console.log("Chat reloaded successfully after edit.");
+                    // Optionally save the edited user message to DB *again* if needed
+                    // addMessageToStore(editedUserMessage); // Depends on how your backend handles edits
+                })
+                .catch(err => {
+                    console.error("Failed to reload chat after edit:", err);
+                    toast.error("Failed to regenerate response after edit.");
+                    // Revert optimistic update?
+                    // setMessagesInProvider(messagesFromProvider);
+                });
+
+        } else {
+            toast.error("Please enter a valid message.");
+        }
+    }, [input, currentChatId, editingMessageIndex, messagesFromProvider, setMessagesInProvider, append, setMessagesInUseChat]);
+
+
+     // --- Render Loading State ---
+     if (isChatsLoading && !currentChatId) {
+         // Show loading only if chats are loading and we are on the main page (no specific chat selected)
+         return <LoadingFallback />;
+     }
+     if (isLoadingChat) {
+        // Show specific loading when creating chat or handling initial query
+         return <LoadingFallback />;
+     }
+
+  
 
     useEffect(() => {
         if (!initializedRef.current && initialState.query && !messages.length) {
@@ -1114,14 +1443,7 @@ const HomeContent = () => {
         );
     };
 
-    const lastUserMessageIndex = useMemo(() => {
-        for (let i = messages.length - 1; i >= 0; i--) {
-            if (messages[i].role === 'user') {
-                return i;
-            }
-        }
-        return -1;
-    }, [messages]);
+    
 
     useEffect(() => {
         if (status === 'streaming') {
@@ -1170,39 +1492,6 @@ const HomeContent = () => {
             role: 'user'
         });
     }, [append]);
-
-    const handleMessageEdit = useCallback((index: number) => {
-        setIsEditingMessage(true);
-        setEditingMessageIndex(index);
-        setInput(messages[index].content);
-    }, [messages, setInput]);
-
-    const handleMessageUpdate = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (input.trim()) {
-            const historyBeforeEdit = messages.slice(0, editingMessageIndex);
-            const originalMessage = messages[editingMessageIndex];
-            setMessages(historyBeforeEdit);
-            const editedContent = input.trim();
-            lastSubmittedQueryRef.current = editedContent;
-            setInput('');
-            setSuggestedQuestions([]);
-            const attachments = originalMessage?.experimental_attachments || [];
-            append(
-                {
-                    role: 'user',
-                    content: editedContent,
-                },
-                {
-                    experimental_attachments: attachments
-                }
-            );
-            setIsEditingMessage(false);
-            setEditingMessageIndex(-1);
-        } else {
-            toast.error("Please enter a valid message.");
-        }
-    }, [input, messages, editingMessageIndex, setMessages, setInput, append, setSuggestedQuestions]);
 
     const AboutButton = () => {
         return (
@@ -1264,9 +1553,7 @@ const HomeContent = () => {
         setSelectedModel(newModel);
     }, []);
 
-    const resetSuggestedQuestions = useCallback(() => {
-        setSuggestedQuestions([]);
-    }, []);
+  
 
     const memoizedMessages = useMemo(() => {
         const msgs = [...messages];
@@ -1623,14 +1910,14 @@ const HomeContent = () => {
                             setInput={setInput}
                             attachments={attachments}
                             setAttachments={setAttachments}
-                            handleSubmit={handleSubmit}
+                            handleSubmit={handleFormSubmit} // Use the correct handler
                             fileInputRef={fileInputRef}
                             inputRef={inputRef}
                             stop={stop}
-                            messages={messages as any}
+                            messages={messagesFromProvider as any} // Pass provider messages
                             append={append}
                             selectedModel={selectedModel}
-                            setSelectedModel={handleModelChange}
+                            setSelectedModel={setSelectedModel} // Keep model switcher logic
                             resetSuggestedQuestions={resetSuggestedQuestions}
                             lastSubmittedQueryRef={lastSubmittedQueryRef}
                             selectedGroup={selectedGroup}
@@ -1638,7 +1925,7 @@ const HomeContent = () => {
                             showExperimentalModels={true}
                             status={status}
                             setHasSubmitted={setHasSubmitted}
-                        />
+                         />
     
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -1822,26 +2109,26 @@ const HomeContent = () => {
                     className="fixed bottom-6 left-0 right-0 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 z-50"
                 >
                     <FormComponent
-                        input={input}
-                        setInput={setInput}
-                        attachments={attachments}
-                        setAttachments={setAttachments}
-                        handleSubmit={handleSubmit}
-                        fileInputRef={fileInputRef}
-                        inputRef={inputRef}
-                        stop={stop}
-                        messages={messages as any}
-                        append={append}
-                        selectedModel={selectedModel}
-                        setSelectedModel={handleModelChange}
-                        resetSuggestedQuestions={resetSuggestedQuestions}
-                        lastSubmittedQueryRef={lastSubmittedQueryRef}
-                        selectedGroup={selectedGroup}
-                        setSelectedGroup={setSelectedGroup}
-                        showExperimentalModels={false}
-                        status={status}
-                        setHasSubmitted={setHasSubmitted}
-                    />
+                             input={input}
+                             setInput={setInput}
+                             attachments={attachments}
+                             setAttachments={setAttachments}
+                             handleSubmit={handleFormSubmit} // Use the correct handler
+                             fileInputRef={fileInputRef}
+                             inputRef={inputRef}
+                             stop={stop}
+                             messages={messagesFromProvider as any} // Pass provider messages
+                             append={append}
+                             selectedModel={selectedModel}
+                             setSelectedModel={setSelectedModel}
+                             resetSuggestedQuestions={resetSuggestedQuestions}
+                             lastSubmittedQueryRef={lastSubmittedQueryRef}
+                             selectedGroup={selectedGroup}
+                             setSelectedGroup={setSelectedGroup}
+                             showExperimentalModels={false} // Typically false for bottom bar
+                             status={status}
+                             setHasSubmitted={setHasSubmitted}
+                        />
                 </motion.div>
             )}
         </AnimatePresence>
@@ -3067,12 +3354,14 @@ const AttachmentsBadge = ({ attachments }: { attachments: any[] }) => {
 };
 
 const Home = () => {
-    return (
-        <Suspense fallback={<LoadingFallback />}>
-            <HomeContent />
-            <InstallPrompt />
-        </Suspense>
-    );
+  return (
+    <AppProviders>
+      <Suspense fallback={<LoadingFallback />}>
+        <HomeContent />
+        <InstallPrompt />
+      </Suspense>
+    </AppProviders>
+  );
 };
 
 export default Home;
