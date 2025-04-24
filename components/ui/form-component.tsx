@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 // /components/ui/form-component.tsx
-import React, { useState, useRef, useCallback, useEffect, FormEvent } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChatRequestOptions, CreateMessage, Message } from 'ai';
 import { toast } from 'sonner';
@@ -390,16 +390,16 @@ interface FormComponentProps {
     attachments: Array<Attachment>;
     setAttachments: React.Dispatch<React.SetStateAction<Array<Attachment>>>;
     handleSubmit: (
-        event?: FormEvent<HTMLFormElement>, // Use the imported FormEvent
-        options?: { initialContent?: string; initialAttachments?: Attachment[] } & ChatRequestOptions
-    ) => Promise<void>;
+        event?: { preventDefault?: () => void },
+        chatRequestOptions?: ChatRequestOptions,
+    ) => void;
     fileInputRef: React.RefObject<HTMLInputElement>;
     inputRef: React.RefObject<HTMLInputElement>;
     stop: () => void;
     messages: Array<UIMessage>;
     append: (
         message: Message | CreateMessage,
-        chatRequestOptions?: ChatRequestOptions
+        chatRequestOptions?: ChatRequestOptions,
     ) => Promise<string | null | undefined>;
     selectedModel: string;
     setSelectedModel: (value: string) => void;
